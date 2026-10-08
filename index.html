@@ -1,0 +1,53 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+
+<title>PRSN Index</title>
+<link rel="icon" type="image/png" href="favicon.png">
+<meta name="description" content="PRSN: the world's first Persian led equity index, measured by transparent rules. Live level, risk, holdings, research and the logic behind every weight.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Vazirmatn:wght@600&display=swap">
+<style>
+/* Layout: white cards on a pale page, navy type, Iran flag green for PRSN and red for the S&P 500. */
+:root {
+  --page: #F7F9FC;
+  --surface: #FFFFFF;
+  --navy: #14264B;
+  --fg: #17243A;
+  --silver: #536277;
+  --dim: #66748A;
+  --line: #E2E8F0;
+  --gain: #178A3E;
+  --loss: #C8322B;
+  --f-display: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter", system-ui, sans-serif;
+  --f-data: "SF Mono", "JetBrains Mono", ui-monospace, Menlo, monospace;
+  color-scheme: light;
+}
+html { background: var(--page); }
+body { margin: 0; background: var(--page); color: var(--fg); font-family: var(--f-display); -webkit-font-smoothing: antialiased; }
+.num { font-family: var(--f-data); font-variant-numeric: tabular-nums; letter-spacing: -.01em; }
+.surface { background: var(--surface); border: 1px solid var(--line); box-shadow: 0 1px 2px rgba(23, 36, 58, .04); }
+.recharts-wrapper, .recharts-surface { outline: none; }
+::selection { background: rgba(20, 38, 75, .14); }
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; border-radius: 6px; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: { fg: "#17243A", silver: "#536277", dim: "#66748A", accent: "#14264B", emerald: "#178A3E", coral: "#C8322B", surface: "#FFFFFF", page: "#F7F9FC", line: "#E2E8F0" },
+      fontFamily: { display: ["-apple-system", "BlinkMacSystemFont", "SF Pro Display", "Inter", "system-ui", "sans-serif"], mono: ["SF Mono", "JetBrains Mono", "ui-monospace", "monospace"] }
+    }
+  }
+};
+</script>
+<div id="root"><div style="padding:48px 20px;color:#66748A;font:14px -apple-system,Inter,sans-serif">Loading PRSN…</div></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prop-types/15.8.1/prop-types.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/recharts/2.12.7/Recharts.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.umd.js"></script>
+<script src="app.js"></script>
+
+</body></html>
