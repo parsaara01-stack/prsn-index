@@ -1,5 +1,5 @@
 /* PRSN dashboard. React 18 + Recharts + Tailwind, written with htm (JSX-style tagged templates, no build step).
-   Data comes from data/index.json, rebuilt by engine.py (every 30 min in market hours, and after the close).
+   Data comes from data/index.json, rebuilt by the engine/ package on GitHub Actions (hourly in market hours, after every close, and the weekly decision on Fridays).
    To host the page somewhere else but keep live data, set window.PRSN_DATA_URL before this script loads. */
 const { useState, useEffect, useMemo, useRef } = React;
 const { ResponsiveContainer, ComposedChart, Area, Line, BarChart, Bar, XAxis, YAxis, Tooltip, LabelList, ReferenceLine } = Recharts;
@@ -9,6 +9,9 @@ const EMBED = !!window.PRSN_EMBED || window.self !== window.top;   // inside an 
 const FULL_URL = window.PRSN_FULL_URL || location.href.split("#")[0];   // "Open" link when embedded
 const SHARE_URL = window.PRSN_SHARE_URL || FULL_URL;   // set window.PRSN_SHARE_URL in index.html to share parsaara.com/index instead
 const ASSET = window.PRSN_ASSET_BASE || "";
+const REPO = "https://github.com/parsaara01-stack/prsn-index";
+const NOMINATE_URL = REPO + "/issues/new?template=nominate-leader.yml";   // the public intake form
+const TIER = { core: { label: "Core", kind: "good" }, build: { label: "Build", kind: "accent" }, toehold: { label: "Toehold", kind: "" }, wildcard: { label: "Wildcard", kind: "accent" } };
 
 // ---------- palette: white surfaces, navy type and buttons, Iran's flag green for PRSN and red for the S&P 500
 const C = { prsn: "#178A3E", spx: "#C8322B", spxSoft: "#EBA9A4", navy: "#14264B", fg: "#17243A", dim: "#66748A", line: "#E2E8F0", gain: "#178A3E", loss: "#C8322B" };
@@ -138,6 +141,8 @@ const TIPS = {
   hurdle: "Return on invested capital (ROIC) minus the weighted average cost of capital (WACC). Positive means the business earns more than its capital costs.",
   score: "A 0–100 composite of quality, value, growth, momentum, alignment and balance sheet. It tilts an equal starting weight up or down.",
   vol: "Volatility: how widely returns swing over a year, annualized from daily moves.",
+  conviction: "Conviction = 40% quality + 30% catalyst + 30% rerate, each a 0–100 rank among eligible companies. It decides the tier and nudges size within it.",
+  tier: "Core: top 4 by conviction with a confirmed catalyst, up to 20% each. Build: next 6, up to 8%. Toehold: the rest and all small caps, up to 3%.",
 };
 
 // ---------- company logos: logos/TICKER.png (square, 128px), else the ticker as a monogram
@@ -212,7 +217,8 @@ function Leaders({ D, selTicker, pick }) {
             <span className="hidden lg:block"><${Avatar} h=${h} size=${64} lazy=${true} /></span>
             <div className="min-w-0 flex-1">
               <div className="text-[14px] sm:text-[15px] font-bold text-fg leading-tight">${cleanName(h.ceo)}</div>
-              <div className="text-[11.5px] text-dim mt-0.5 leading-snug truncate">${h.name}${h.wildcard ? " · Wildcard" : ""}</div>
+              <div className="text-[11.5px] text-dim mt-0.5 leading-snug truncate">${h.name}${h.wildcard ? " · Wildcard" : h.tier ? " · " + TIER[h.tier].label : ""}</div>
+              ${h.leaving && html`<div className="mt-1"><${Chip} kind="bad">Leaving · ${h.leaving.rule}<//></div>`}
               <div className="hidden lg:flex mt-2 items-center gap-2 num text-[12px]">
                 <span className="w-12 h-1.5 rounded-full bg-fg/[0.07] overflow-hidden"><span className="block h-full rounded-full bg-emerald" style=${{ width: (h.weight / mx * 100) + "%" }}></span></span>
                 <span className="font-semibold text-fg">${pctU(h.weight)}</span>
@@ -293,7 +299,7 @@ function Hero({ D, range, setRange, showBench, setShowBench }) {
         <${KV} icon="wave" k=${"Swings · S&P " + pctU(S.vol_bench)} v=${pctU(S.vol)} tip=${html`<${InfoTip} label="volatility">${TIPS.vol}<//>`} />
         <${KV} icon="drop" k=${"Worst drop · S&P " + pctU(S.max_dd_bench.depth)} v=${pctU(S.max_dd.depth)} cls="!text-coral" />
         <${KV} icon="pulse" k="Moves vs market" v=${dec(S.beta)} tip=${html`<${InfoTip} label="beta">${TIPS.beta}<//>`} />
-        <${KV} icon="calendar" k="Next rebalance" v=${date(D.next_rebalance, { month: "short", day: "numeric" })} />
+        <${KV} icon="calendar" k=${D.pending ? "Trade pending" : "Next weekly check"} v=${date(D.pending ? D.pending.window_end : D.next_rebalance, { month: "short", day: "numeric" })} />
       </div>
     <//>`;
 }
@@ -380,8 +386,10 @@ function Candles({ rows, kind }) {
 
 function Detail({ D, h, back }) {
   const [kind, setKind] = useState("1d");
-  const w = h.why, m = h.metrics, a = h.analysis, t = h.tech, F = D.rules.factors, L = D.rules.factor_labels || {};
-  const WW = D.rules.wildcard.weight;
+  const w = h.why, m = h.metrics, a = h.analysis, t = h.tech;
+  const v2 = !!(w && w.tier), V1 = D.rules_v1 || {};
+  const F = v2 ? D.rules.scores.conviction : (V1.factors || {}), L = v2 ? D.rules.factor_labels : (V1.factor_labels || {});
+  const WW = (v2 ? D.rules.wildcard : (V1.wildcard || D.rules.wildcard)).weight;
   const span = (m.target_high || 0) - (m.target_low || 0);
   const pos = v => span > 0 ? Math.max(0, Math.min(100, (v - m.target_low) / span * 100)) : 50;
   const fl = a.filings || {};
@@ -394,6 +402,7 @@ function Detail({ D, h, back }) {
           <span className="self-center"><${CoLogo} t=${h.ticker} size=${32} /></span>
           <span className="num text-[14px] font-semibold text-emerald">${h.ticker}</span>
           <h3 id="detail-title" tabIndex="-1" className="text-[23px] font-extrabold tracking-tight leading-none text-fg outline-none focus-visible:ring-2 focus-visible:ring-accent rounded">${h.name}</h3>
+          ${h.tier && html`<span className="self-center"><${Chip} kind=${TIER[h.tier].kind}>${TIER[h.tier].label}<//></span>`}
         </div>
         <div className="flex gap-1.5 flex-wrap">
           ${back && html`<${Pill} onClick=${back}>← Leaders<//>`}
@@ -405,13 +414,25 @@ function Detail({ D, h, back }) {
           ${(kind === "4h" && !h.candles_4h.length) ? html`<p className="text-dim text-[13px] py-16 text-center">4-hour bars aren't available right now.</p>`
             : html`<${Candles} key=${h.ticker + kind} rows=${kind === "1d" ? t.candles_1d : h.candles_4h} kind=${kind} />`}
           <p className="mt-5 mb-0 text-[14.5px] leading-relaxed text-silver">${h.thesis}</p>
+          ${h.leaving && html`
+            <div className="mt-4 rounded-xl bg-coral/[0.06] border border-coral/20 p-4 text-[13px] text-silver leading-snug"><b className="text-coral">Leaving at the next trade: ${h.leaving.rule}.</b> ${h.leaving.detail}</div>`}
           ${h.wildcard ? html`
-            <div className="mt-4 rounded-xl bg-emerald/[0.05] border border-line p-4 text-[13px] text-silver leading-snug"><b className="text-fg">Wildcard, fixed at ${pctU(WW, 0)}.</b> One pre-profit company gets in on growth alone: revenue up ${pct(m.rev_growth, 0)} on the year. Weight now ${pctU(h.weight)}.</div>`
+            <div className="mt-4 rounded-xl bg-emerald/[0.05] border border-line p-4 text-[13px] text-silver leading-snug"><b className="text-fg">Wildcard, fixed at ${pctU(WW, 0)}.</b> One fast grower that misses the quality cut gets in on its catalysts: revenue up ${pct(m.rev_growth, 0)} on the year. Weight now ${pctU(h.weight)}.</div>`
+            : v2 ? html`
+            <div className="mt-4">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-line rounded-xl border border-line overflow-hidden">
+                ${[[TIER[w.tier].label, html`<span className="inline-flex items-center">Tier<${InfoTip} label="tiers">${TIPS.tier}<//></span>`],
+                   [w.conviction.toFixed(0), html`<span className="inline-flex items-center">Conviction<${InfoTip} label="conviction">${TIPS.conviction}<//></span>`],
+                   [pctU(w.raw), "Tier base, tilted"], [pctU(h.target), w.binding ? "Target, at the cap" : "Target"]].map(([v, k], i) => html`
+                  <div key=${i} className="bg-white px-3 py-2.5 min-w-0"><div className=${"num text-[14px] sm:text-[15px] font-semibold " + (i === 3 ? "text-emerald" : "text-fg")}>${v}</div><div className="text-[11px] text-dim mt-0.5 leading-tight">${k}</div></div>`)}
+              </div>
+              <div className="mt-2 text-[12px] text-dim">Target set ${rb}. Weight now <span className="num font-semibold text-fg">${pctU(h.weight)}</span> after price moves.</div>
+            </div>`
             : w && html`
             <div className="mt-4">
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-line rounded-xl border border-line overflow-hidden">
                 ${[[pctU(w.size_share), "Equal start"], [w.tilt.toFixed(2) + "×", html`<span className="inline-flex items-center">Score ${h.composite.toFixed(0)} tilt<${InfoTip} label="the score">${TIPS.score}<//></span>`],
-                   [pctU(w.final), w.binding ? `After ${w.binding === "floor" ? pctU(D.rules.floor, 0) + " floor" : pctU(D.rules.cap, 0) + " cap"}` : "After limits"], [pctU(h.target), "Target"]].map(([v, k], i) => html`
+                   [pctU(w.final), w.binding ? `After ${w.binding === "floor" ? pctU(V1.floor, 0) + " floor" : pctU(V1.cap, 0) + " cap"}` : "After limits"], [pctU(h.target), "Target"]].map(([v, k], i) => html`
                   <div key=${i} className="bg-white px-3 py-2.5 min-w-0"><div className=${"num text-[14px] sm:text-[15px] font-semibold " + (i === 3 ? "text-emerald" : "text-fg")}>${v}</div><div className="text-[11px] text-dim mt-0.5 leading-tight">${k}</div></div>`)}
               </div>
               <div className="mt-2 text-[12px] text-dim">Target set ${rb}. Weight now <span className="num font-semibold text-fg">${pctU(h.weight)}</span> after price moves.</div>
@@ -444,7 +465,7 @@ function Detail({ D, h, back }) {
                 <div className="h-1.5 rounded-full bg-fg/[0.07] overflow-hidden"><div className="h-full rounded-full bg-emerald" style=${{ width: (h.scores[k] || 0) + "%" }}></div></div>
                 <span className="num text-right font-semibold text-fg">${h.scores[k] == null ? "–" : h.scores[k].toFixed(0)}</span>
               </div>`)}
-            <div className="text-[11px] text-dim">Scores out of 100, set ${rb}</div>
+            <div className="text-[11px] text-dim">${v2 ? "Ranks out of 100 among eligible companies" : "Scores out of 100 under the v1 rules"}, set ${rb}</div>
           </div>
           ${span > 0 && html`
             <div>
@@ -491,10 +512,12 @@ function Years({ D }) {
 
 // ---------- research: how companies are chosen, with the math in view
 function Research({ D }) {
-  const R = D.rules, Q = D.research, L = D.lab, F = R.factors, FL = R.factor_labels || {};
-  const core = D.holdings.filter(h => !h.wildcard).length;
-  const ours = L.schemes.find(s => s.name === "PRSN method"), eq = L.schemes.find(s => s.name === "Equal weight"),
-        sz = L.schemes.find(s => s.name.startsWith("√cap")), live = L.cadences[0];
+  const R = D.rules, Q = D.research, G = R.gates, T = R.tiers, SC = R.scores, EX = R.rebalance.execution;
+  const held = D.holdings.filter(h => !h.wildcard).length;
+  const PLAINF = { roic_spread: "return on capital over its cost", op_margin: "operating margin", fcf_margin: "free-cash-flow margin", gross_margin: "gross margin", roe: "return on equity", leverage: "low debt",
+    fwd_eps_growth: "earnings growth expected", rev_growth: "revenue growth", beat_rate: "quarters beating estimates", surprise: "size of the beats", insider_net: "insider buying", buyback_yield: "buybacks", momentum: "12-month momentum",
+    cheap_pe: "low forward P/E", fcf_yield: "free-cash-flow yield", upside: "analyst upside", peg: "P/E for the growth", off_high: "room below the 52-week high" };
+  const pctW = o => Object.entries(o).map(([k, v]) => `${PLAINF[k] || k} ${Math.round(v * 100)}`).join(" · ");
   const Step = ({ n, t, icon, children }) => html`
     <div className="min-w-[86%] sm:min-w-[60%] lg:min-w-0 snap-start flex flex-col gap-3 rounded-xl border border-line bg-page/60 p-4 sm:p-5">
       <div className="flex items-center gap-2.5"><${IconBadge} n=${icon} /><span className="num text-[12px] font-semibold text-emerald">Step ${n}</span></div>
@@ -503,35 +526,34 @@ function Research({ D }) {
     </div>`;
   const P = ({ children }) => html`<p className="m-0 text-[13.5px] leading-relaxed text-silver">${children}</p>`;
   const Res = ({ children }) => html`<div className="mt-auto text-[13px] leading-snug font-medium text-fg border-l-2 border-emerald pl-3">${children}</div>`;
+  const Gates = ({ rows }) => html`<ul className="m-0 p-0 list-none grid gap-1.5 text-[13px] text-fg">
+    ${rows.map(([k, v]) => html`<li key=${k} className="flex gap-3"><span className="w-[70px] shrink-0 text-dim">${k}</span><span className="num text-[12.5px]">${v}</span></li>`)}</ul>`;
   return html`
     <${Card} className="col-span-12 relative overflow-hidden" id="research">
       <div aria-hidden="true" className="absolute top-0 left-0 right-0 flex h-[3px]"><span className="flex-1" style=${{ background: C.prsn }}></span><span className="flex-1 bg-white"></span><span className="flex-1" style=${{ background: C.spx }}></span></div>
-      <${Head} title="How Companies Are Chosen" icon="flask" aside="Three steps, run every month" />
-      <p className="-mt-1 mb-5 max-w-[70ch] text-[14px] leading-relaxed text-silver">Heritage defines who can be considered. After that, only the numbers decide: who gets in, and how much each one gets.</p>
+      <${Head} title="How Companies Are Chosen" icon="flask" aside=${`Rules v${R.version} · checked every week`} />
+      <p className="-mt-1 mb-5 max-w-[70ch] text-[14px] leading-relaxed text-silver">Heritage decides who can be considered. After that, only the numbers decide who gets in and how much each one gets. Nobody picks stocks by hand, me included.</p>
       <div className="-mx-5 px-5 sm:mx-0 sm:px-0 flex lg:grid lg:grid-cols-3 gap-3 sm:gap-4 overflow-x-auto lg:overflow-visible snap-x snap-mandatory scroll-px-5 overscroll-x-contain pb-1">
         <${Step} n=${1} t="Select" icon="search">
-          <${P}>Every public company led by a Persian or Iranian CEO, co-CEO or executive chair. It must clear all five gates.<//>
-          <ul className="m-0 p-0 list-none grid gap-1.5 text-[13px] text-fg">
-            ${[["Size", `market cap > $${R.min_mcap_b}B`], ["Liquidity", `> $${R.min_adv_musd}M traded / day`], ["Profit", "GAAP operating and net income > 0"], ["Price", `forward P/E < ${R.max_fwd_pe}× (REITs: EV/EBITDA < ${R.max_ev_ebitda_reit}×)`], ["Record", "no going-concern, takeover or interim leader"]].map(([k, v]) => html`
-              <li key=${k} className="flex gap-3"><span className="w-[70px] shrink-0 text-dim">${k}</span><span className="num text-[12.5px]">${v}</span></li>`)}
-          </ul>
-          <${Res}>${D.universe_size} tracked. ${core} qualify, plus one wildcard: the fastest-growing pre-profit name.<//>
+          <${P}>Every US-listed company led by a Persian or Iranian CEO, co-CEO or executive chair, documented by a public source. Each one must clear every gate.<//>
+          <${Gates} rows=${[["Size", `market cap > $${Math.round(G.min_mcap_b * 1000)}M`], ["Liquidity", `> $${G.min_adv_musd}M a day ($${G.min_adv_small_musd}M small caps)`], ["Listing", `${G.exchanges.join(", ")}, price ≥ $${G.min_price}`],
+            ["Trend", `not ${Math.abs(G.stop_rel_3m * 100)}+ pts behind the S&P 500 over 3 months`], ["Record", "no going-concern, signed takeover or interim leader"]]} />
+          <${Res}>${D.universe_size} tracked. ${held} held now, plus ${D.holdings.some(h => h.wildcard) ? "one wildcard" : "no wildcard"}.<//>
         <//>
-        <${Step} n=${2} t="Analyze" icon="pulse">
-          <${P}>Each 10-K, 10-Q and proxy feeds the model. The core question: does the business earn more than its capital costs?<//>
-          <${Math_}>r<${Sub}>E<//> = r<${Sub}>f<//> + β · ERP<//>
-          <${Math_}>WACC = <sup>E</sup>⁄<sub>V</sub> r<${Sub}>E<//> + <sup>D</sup>⁄<sub>V</sub> r<${Sub}>D<//> (1 − t)<//>
-          <${Math_}>ROIC = EBIT (1 − t) ⁄ IC  >  WACC<//>
-          <${P}>Also tracked: growth, buybacks, insider buying and earnings vs consensus. r<${Sub}>f<//> is the 13-week T-bill; ERP is ${pctU(R.erp, 0)}.<//>
-          <${Res}>${Q.clear_hurdle} of ${Q.core} clear their hurdle: ${pctU(Q.roic)} return on capital vs a ${pctU(Q.wacc)} cost. ${pctU(Q.beat_rate, 0)} of recent quarters beat estimates.<//>
+        <${Step} n=${2} t="Score" icon="pulse">
+          <${P}>Three scores, each a 0–100 rank among the companies that passed. Quality must be in the top half, with an operating profit, before the others count.<//>
+          ${[["Quality", "Is it a great business?", SC.quality], ["Catalyst", "Is there a reason it moves soon?", SC.catalyst], ["Rerate", "Is it priced for less than it is?", SC.rerate]].map(([k, q, o]) => html`
+            <div key=${k} className="text-[12.5px] leading-snug"><b className="text-fg">${k}</b> <span className="text-dim">· ${q}</span><div className="mt-0.5 text-silver">${pctW(o)}</div></div>`)}
+          <${Math_}>Conviction = ${SC.conviction.quality} Q + ${SC.conviction.catalyst} C + ${SC.conviction.rerate} R<//>
+          <${Res}>${Q.clear_hurdle} of ${Q.core} earn more than their cost of capital: ${pctU(Q.roic)} return on capital vs a ${pctU(Q.wacc)} cost.<//>
         <//>
-        <${Step} n=${3} t="Allocate" icon="pie">
-          <${P}>Six scores, each 0–100, combine into one. The score tilts an equal starting weight up or down.<//>
-          <${Math_}>S<${Sub}>i<//> = Σ<${Sub}>k<//> ω<${Sub}>k<//> s<${Sub}>i,k<//><//>
-          <${Math_}>w<${Sub}>i<//> ∝ ${R.tilt_floor.toFixed(2)} + ${R.tilt_range.toFixed(2)} · S<${Sub}>i<//> ⁄ 100,  ${pctU(R.floor, 0)} ≤ w<${Sub}>i<//> ≤ ${pctU(R.cap, 0)}<//>
-          <${Math_}>rebalance if  max<${Sub}>i<//> |w<${Sub}>i<//> − w*<${Sub}>i<//>| > ${Math.round(R.drift_band * 100)} pts<//>
-          <${P}>ω: ${Object.keys(F).map(k => `${(FL[k] || k).toLowerCase()} ${Math.round(F[k] * 100)}`).join(" · ")}. Reset every third Friday; the wildcard is fixed at ${pctU(R.wildcard.weight, 0)}.<//>
-          <${Res}>Sharpe ${dec(ours.sharpe)} vs ${dec(eq.sharpe)} equal-weight and ${dec(sz.sharpe)} size-weight after ${L.cost_bps} bp costs, at ${pctU(live.turnover_yr, 0)} turnover a year.<//>
+        <${Step} n=${3} t="Size & Trade" icon="pie">
+          <${P}>Concentrate in the best ideas. Within a tier, conviction moves weight up or down by up to ${Math.round(T.tilt * 100)}%.<//>
+          <${Gates} rows=${[["Core", `top ${T.core.count} with catalyst ≥ ${T.core.min_catalyst}: ~${pctU(T.core.base, 0)}, max ${pctU(T.core.max, 0)}`], ["Build", `next ${T.build.count}: ~${pctU(T.build.base, 0)}, max ${pctU(T.build.max, 0)}`],
+            ["Toehold", `the rest: ~${pctU(T.toehold.base, 0)}, max ${pctU(T.toehold.max, 0)}`], ["Small caps", `under $${Math.round(G.small_cap_below_b * 1000)}M: ≤ ${pctU(R.small_cap.max_each, 0)} each, ≤ ${pctU(R.small_cap.max_total, 0)} total`],
+            ["Wildcard", `${pctU(R.wildcard.weight, 0)}, best catalyst among fast growers`], ["Cash", "whatever is left sits in T-bills"]]} />
+          <${P}>Checked every Friday. New names enter at the monthly reset; a broken rule or a ${Math.round(R.rebalance.drift_band * 100)}-pt drift triggers a trade any week. Trades wait for the first calm day (VIX under ${EX.vix_max}, not ${Math.round(EX.vix_spike * 100)}%+ above its 5-day average), then fill at the next close.<//>
+          <${Res}>${D.pending ? `Trade pending: decided ${date(D.pending.decided, { month: "short", day: "numeric" })}, executes by ${date(D.pending.window_end, { month: "short", day: "numeric" })}.` : `Last trade ${date(D.last_rebalance, { month: "short", day: "numeric" })}. Next check ${date(D.next_rebalance, { month: "short", day: "numeric" })}.`}<//>
         <//>
       </div>
       <div className="lg:hidden mt-2 text-[11.5px] text-dim">Swipe for all three steps →</div>
@@ -558,7 +580,8 @@ function SliceLogo({ t, x, y, size }) {
 }
 function Breakdown({ D, selTicker, pick }) {
   const [hov, setHov] = useState(null);
-  const H = D.holdings.map((h, i) => ({ h, i })).sort((a, b) => b.h.weight - a.h.weight);
+  const cash = D.cash > 0.005 ? [{ h: { ticker: "CASH", name: "Cash in T-bills", weight: D.cash, sector: "Weight the rules didn't place" }, i: -1 }] : [];
+  const H = [...D.holdings.map((h, i) => ({ h, i })), ...cash].sort((a, b) => b.h.weight - a.h.weight);
   const tot = H.reduce((s, x) => s + x.h.weight, 0);
   const cx = 170, cy = 170, R1 = 158, R0 = 100, gap = 0.012;
   let a = 0;
@@ -578,7 +601,7 @@ function Breakdown({ D, selTicker, pick }) {
             ${sl.map(x => {
               const on = x.h.ticker === (hov || selTicker);
               return html`<path key=${x.h.ticker} d=${arc(cx, cy, R0, on ? R1 + 6 : R1, x.a0 + gap, x.a1 - gap)} fill=${x.color} stroke="#fff" strokeWidth="1"
-                className="cursor-pointer transition-[d] duration-150" onMouseEnter=${() => setHov(x.h.ticker)} onMouseLeave=${() => setHov(null)} onClick=${() => pick(x.i)}><title>${x.h.name} ${pctU(x.h.weight)}</title></path>`;
+                className="cursor-pointer transition-[d] duration-150" onMouseEnter=${() => setHov(x.h.ticker)} onMouseLeave=${() => setHov(null)} onClick=${() => x.i >= 0 && pick(x.i)}><title>${x.h.name} ${pctU(x.h.weight)}</title></path>`;
             })}
             ${sl.map(x => html`<${SliceLogo} key=${"l" + x.h.ticker} t=${x.h.ticker} x=${x.lx} y=${x.ly} size=${x.size} />`)}
             <circle cx=${cx} cy=${cy} r=${R0 - 8} fill="#fff" />
@@ -592,7 +615,7 @@ function Breakdown({ D, selTicker, pick }) {
         <ul className="lg:col-span-7 m-0 p-0 list-none grid grid-cols-2 gap-x-4 sm:gap-x-6">
           ${sl.map(x => html`
             <li key=${x.h.ticker}>
-              <button type="button" onClick=${() => pick(x.i)} onMouseEnter=${() => setHov(x.h.ticker)} onMouseLeave=${() => setHov(null)}
+              <button type="button" onClick=${() => x.i >= 0 && pick(x.i)} onMouseEnter=${() => setHov(x.h.ticker)} onMouseLeave=${() => setHov(null)}
                 className=${"w-full text-left flex items-center gap-2 sm:gap-3 py-2 sm:py-2.5 border-b border-line rounded-sm transition-colors " + (x.h.ticker === (hov || selTicker) ? "bg-page" : "")}>
                 <span className="w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full shrink-0" style=${{ background: x.color }}></span>
                 <${CoLogo} t=${x.h.ticker} size=${26} />
@@ -701,14 +724,149 @@ function AllCompanies({ D, pick }) {
         </div>
         <${Group} title="Candidates To Watch" n=${watch.length}>
           ${watch.map(b => html`<${Row} key=${b.ticker} t=${b.ticker} name=${b.name} ceo=${b.ceo} role=${b.role} sub=${b.detail}
-            chip=${html`<span className="shrink-0 rounded-full bg-fg/[0.05] text-silver px-2 py-0.5 text-[11.5px] font-semibold whitespace-nowrap">${b.rule}</span>`} />`)}
+            chip=${html`<span className=${"shrink-0 rounded-full px-2 py-0.5 text-[11.5px] font-semibold whitespace-nowrap " + (b.rule === "Joining" ? "bg-emerald/10 text-emerald" : "bg-fg/[0.05] text-silver")}>${b.rule}</span>`} />`)}
         <//>
         ${priv.length > 0 && html`<${Group} title="Honorable Mentions, Private" n=${priv.length}>
           ${priv.map(p => html`<${Row} key=${p.id} t=${p.id} name=${p.name} ceo=${p.ceo} role=${p.role} sub=${p.sector} onClick=${() => goTo("honorable")}
             chip=${html`<span className="shrink-0 rounded-full bg-accent/[0.07] text-accent px-2 py-0.5 text-[11.5px] font-semibold num">${bil(p.latest.valuation_b)}</span>`} />`)}
         <//>`}
       </div>
-      <p className="mt-4 mb-0 text-[11.5px] text-dim leading-snug">Candidates are re-screened every month and join automatically when they clear all five gates. Know a Persian or Iranian CEO we're missing? Add them to universe.json.</p>
+      <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="m-0 text-[11.5px] text-dim leading-snug max-w-[70ch]">Candidates are re-screened every Friday and join at the monthly reset once they clear every gate. Know a Persian or Iranian CEO we're missing? Anyone can nominate a leader, including themselves.</p>
+        <${Pill} primary href=${NOMINATE_URL}>Nominate a leader ↗<//>
+      </div>
+    <//>`;
+}
+
+// ---------- decision log: every weekly run, what it decided and why
+const TRIGGER = { "v2 launch": ["Rules v2", "accent"], "monthly reconstitution": ["Monthly reset", "good"], "event exit": ["Rule broken", "bad"], drift: ["Drift", "accent"], "no change": ["No trades", ""] };
+function Decisions({ D }) {
+  const M = D.macro || {}, P = D.pending, R = D.rules;
+  const [open, setOpen] = useState(null);
+  const nm = t => ((D.holdings.find(h => h.ticker === t) || D.bench.find(b => b.ticker === t) || {}).name || t);
+  const tk = ts => ts.map(t => html`<span key=${t} className="inline-flex items-center gap-1.5 rounded-full border border-line bg-white pl-0.5 pr-2 py-0.5"><${CoLogo} t=${t} size=${18} /><span className="num text-[11.5px] font-semibold text-fg">${t}</span></span>`);
+  return html`
+    <${Card} className="col-span-12" id="decisions">
+      <${Head} title="Decision Log" icon="calendar" aside="Every Friday, after the close. Nobody overrides it." />
+      ${P && html`<div className="mb-5 rounded-xl border border-emerald/30 bg-emerald/[0.05] p-4">
+        <div className="flex flex-wrap items-center gap-2"><${Chip} kind="good">Trade pending<//><span className="text-[12.5px] text-dim">Decided ${date(P.decided)} · executes by ${date(P.window_end)}${P.signal ? ` · calm-day signal ${date(P.signal, { month: "short", day: "numeric" })}, fills at the next close` : " · waiting for a calm day"}</span></div>
+        <p className="mt-2 mb-0 text-[13.5px] leading-relaxed text-fg">${P.summary}</p>
+      </div>`}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 pb-5 mb-1 border-b border-line">
+        <${KV} k="Market regime" v=${M.regime || "–"} cls=${M.regime === "Risk-off" ? "!text-coral" : M.regime === "Risk-on" ? "!text-emerald" : ""} />
+        <${KV} k=${`VIX · trades wait if ≥ ${R.rebalance.execution.vix_max}`} v=${dec(M.vix, 1)} />
+        <${KV} k="10-year yield, 3-mo change" v=${M.ten_year == null ? "–" : `${pctU(M.ten_year, 2)} (${pts(M.ten_year_chg_3m, 2)})`} />
+        <${KV} k="Dollar, 3 months" v=${pct(M.dollar_chg_3m)} />
+        <${KV} k="S&P 500 vs 200-day" v=${pct(M.spx_vs_sma200)} cls=${tone(M.spx_vs_sma200)} />
+      </div>
+      <p className="mt-2 mb-3 text-[11.5px] text-dim">Macro readings are shown and logged. They don't change weights until a test shows they help.</p>
+      <ol className="m-0 p-0 list-none">
+        ${(D.decisions || []).map((d, i) => {
+          const [lab, kind] = TRIGGER[d.trigger] || [d.trigger, ""];
+          const on = open === i;
+          return html`<li key=${d.date} className="py-3 border-t border-line">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5">
+              <span className="num text-[12.5px] font-semibold text-fg w-[92px] shrink-0">${date(d.date)}</span>
+              <${Chip} kind=${kind}>${lab}<//>
+              <span className="text-[11.5px] text-dim num">v${d.rules} · VIX ${dec(d.vix, 1)} · ${d.regime || ""}</span>
+              ${d.targets && d.targets.length > 0 && html`<button type="button" onClick=${() => setOpen(on ? null : i)} aria-expanded=${on} className="ml-auto text-[12px] font-semibold text-accent hover:underline">${on ? "Hide targets" : "Show targets"}</button>`}
+            </div>
+            <p className="mt-1.5 mb-0 text-[13px] leading-relaxed text-silver max-w-[90ch]">${d.summary}</p>
+            ${(d.adds.length > 0 || d.drops.length > 0) && html`<div className="mt-2 flex flex-wrap items-center gap-1.5">
+              ${d.adds.length > 0 && html`<span className="text-[11px] font-semibold text-emerald mr-0.5">In</span>`}${tk(d.adds)}
+              ${d.drops.length > 0 && html`<span className="text-[11px] font-semibold text-coral ml-2 mr-0.5">Out</span>`}${tk(d.drops)}
+            </div>`}
+            ${d.exits && d.exits.length > 0 && html`<ul className="mt-2 mb-0 pl-0 list-none grid gap-1 text-[12px] text-silver">${d.exits.map(e => html`<li key=${e.ticker}><b className="text-fg">${nm(e.ticker)}</b> · ${e.rule}: ${e.detail}</li>`)}</ul>`}
+            ${on && html`<div className="mt-3 overflow-x-auto"><table className="w-full text-[12.5px] num">
+              <thead><tr className="text-[10.5px] uppercase tracking-[0.08em] text-dim"><th className="text-left font-semibold pb-1.5">Company</th><th className="text-left font-semibold pb-1.5 px-2">Tier</th><th className="text-right font-semibold pb-1.5 px-2">Conviction</th><th className="text-right font-semibold pb-1.5 px-2">Was</th><th className="text-right font-semibold pb-1.5">Target</th></tr></thead>
+              <tbody>${d.targets.map(t => html`<tr key=${t.ticker} className="border-t border-line"><td className="py-1.5 font-semibold text-fg">${t.ticker}</td><td className="py-1.5 px-2">${TIER[t.tier] ? TIER[t.tier].label : t.tier}</td><td className="py-1.5 px-2 text-right">${t.conviction.toFixed(0)}</td><td className="py-1.5 px-2 text-right text-dim">${pctU(t.from)}</td><td className="py-1.5 text-right font-semibold text-emerald">${pctU(t.target)}</td></tr>`)}</tbody>
+            </table></div>`}
+          </li>`;
+        })}
+      </ol>
+      <div className="mt-4 pt-4 border-t border-line grid gap-1.5">
+        <${Label} icon="book">Rulebook versions<//>
+        ${[...(R.changelog || [])].reverse().map(c => html`<p key=${c.version} className="m-0 text-[12.5px] text-silver leading-snug"><b className="num text-fg">v${c.version}</b> · ${date(c.date)} · ${c.note}</p>`)}
+        <p className="m-0 text-[11.5px] text-dim">Every rule lives in one public file, <a className="underline underline-offset-2 hover:text-fg" href=${REPO + "/blob/main/engine/config/rules.yaml"} target="_blank" rel="noopener">rules.yaml ↗</a>. A change means a new version, logged here.</p>
+      </div>
+    <//>`;
+}
+
+// ---------- directory: every documented Persian or Iranian leader we know of, public and private
+const initialsOf = s => s.replace(/[^A-Za-z0-9 ]/g, "").split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join("").toUpperCase();
+function Directory({ D }) {
+  const all = D.directory || [];
+  const [tab, setTab] = useState("public");
+  const [q, setQ] = useState("");
+  const rows = all.filter(r => r.type === tab).filter(r => !q || (r.name + " " + r.company + " " + r.sector + " " + r.ticker).toLowerCase().includes(q.toLowerCase()));
+  const n = k => all.filter(r => r.type === k).length;
+  return html`
+    <${Card} className="col-span-12" id="directory">
+      <${Head} title="Leader Directory" icon="building" aside=${`${n("public")} public · ${n("private")} private · each with a public source`} />
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <div className="flex gap-1.5" role="group" aria-label="Directory list">
+          <${Pill} active=${tab === "public"} onClick=${() => setTab("public")}>Public companies<//>
+          <${Pill} active=${tab === "private"} onClick=${() => setTab("private")}>Private companies<//>
+        </div>
+        <input type="search" value=${q} onInput=${e => setQ(e.target.value)} placeholder="Search name, company, sector" aria-label="Search the directory"
+          className="ml-auto w-full sm:w-[260px] rounded-full border border-line bg-white px-3.5 py-1.5 text-[13px] text-fg placeholder:text-dim focus:outline-none focus:border-accent" />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
+        ${rows.map(r => html`
+          <div key=${r.name + r.company} className="rounded-xl border border-line bg-white p-4 flex flex-col gap-2 min-w-0">
+            <div className="flex items-center gap-3 min-w-0">
+              ${r.ticker ? html`<${CoLogo} t=${r.ticker} size=${36} />` : html`<span className="w-9 h-9 rounded-full grid place-items-center bg-accent/[0.07] ring-1 ring-line text-[12px] font-bold text-accent shrink-0" aria-hidden="true">${initialsOf(r.company)}</span>`}
+              <div className="min-w-0 flex-1">
+                <div className="text-[14.5px] font-bold text-fg leading-tight truncate">${r.name}</div>
+                <div className="text-[12px] text-dim leading-tight truncate">${r.title}, <a href=${r.website} target="_blank" rel="noopener" className="hover:text-fg underline-offset-2 hover:underline">${r.company}</a>${r.ticker ? html` · <span className="num">${r.ticker}</span>` : ""}</div>
+              </div>
+              ${r.in_index && html`<${Chip} kind="good">In PRSN<//>`}
+            </div>
+            <p className="m-0 text-[12.5px] leading-snug text-silver">${r.background}</p>
+            <div className="mt-auto flex flex-wrap items-center gap-x-3 gap-y-1 text-[11.5px] text-dim">
+              <span>${r.sector}</span><span>${r.hq}</span>
+              <a href=${r.source} target="_blank" rel="noopener" className="ml-auto text-accent font-semibold hover:underline">Source ↗</a>
+              ${r.confidence !== "confirmed" && html`<span title="Heritage documented by a weaker or indirect source" className="text-silver">· thin source</span>`}
+            </div>
+          </div>`)}
+        ${rows.length === 0 && html`<p className="m-0 text-[13px] text-dim">No one matches that search.</p>`}
+      </div>
+      <div className="mt-5 rounded-xl bg-page border border-line p-4 flex flex-wrap items-center justify-between gap-3">
+        <p className="m-0 text-[13px] text-silver leading-snug max-w-[75ch]"><b className="text-fg">Missing someone, or are you one of them?</b> Nominate a CEO, co-CEO or executive chair of Persian or Iranian heritage, including yourself. Public companies over $${Math.round(D.rules.gates.min_mcap_b * 1000)}M, or private companies at Series A or $10M+ raised. Each entry needs a public source; nobody is added based on their name.</p>
+        <${Pill} primary href=${NOMINATE_URL}>Nominate a leader ↗<//>
+      </div>
+    <//>`;
+}
+
+// ---------- live account: my real-money account following the rules, in percentages only
+function Account({ D }) {
+  const A = D.account;
+  if (!A || !A.series || A.series.length < 2) return null;
+  const data = A.series.map(r => ({ d: r[0], a: r[1], p: r[2] }));
+  const end = data[data.length - 1];
+  return html`
+    <${Card} className="col-span-12" id="account">
+      <${Head} title="Live Account" icon="dollar" aside=${`Real money, following the rules since ${date(A.since)} · updated ${date(A.updated)}`} />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-8 h-[220px]">
+          <${ResponsiveContainer} width="100%" height="100%">
+            <${ComposedChart} data=${data} margin=${{ top: 10, right: 0, bottom: 0, left: 0 }}>
+              <${XAxis} dataKey="d" hide /><${YAxis} hide domain=${["auto", "auto"]} />
+              <${ReferenceLine} y=${100} stroke="rgba(23,36,58,0.10)" strokeDasharray="2 6" />
+              <${Tooltip} content=${html`<${GlassTip} fmt=${p => html`<div className="text-dim">${date(p.d)}</div><div className="text-accent font-semibold">Account ${pct(p.a / 100 - 1)}</div><div className="text-emerald">PRSN ${pct(p.p / 100 - 1)}</div>`} />`} />
+              <${Line} type="monotone" dataKey="p" stroke=${C.prsn} strokeWidth=${1.6} dot=${false} isAnimationActive=${false} />
+              <${Line} type="monotone" dataKey="a" stroke=${C.navy} strokeWidth=${2.2} dot=${false} isAnimationActive=${false} />
+            <//>
+          <//>
+        </div>
+        <div className="lg:col-span-4 grid grid-cols-2 gap-4 content-start">
+          <${KV} k="Account, time-weighted" v=${pct(end.a / 100 - 1)} cls=${tone(end.a - 100)} />
+          <${KV} k="PRSN, same dates" v=${pct(end.p / 100 - 1)} cls=${tone(end.p - 100)} />
+          <${KV} k="Gap (costs, timing, cash)" v=${pts(end.a / 100 - end.p / 100)} />
+          <${KV} k="Positions" v=${A.positions.length} />
+        </div>
+      </div>
+      <p className="mt-4 mb-0 text-[11.5px] text-dim leading-snug">I own these positions. Shown in percentages only. Trades follow the published decision; I approve the orders but don't choose them. Not investment advice.</p>
     <//>`;
 }
 
@@ -759,19 +917,17 @@ const REFS = [
 ];
 const REF_LABEL = { ar03: "Anderson & Reeb 2003", afp19: "Asness, Frazzini & Pedersen 2019", ajkm22: "Azoulay et al. 2022", ahm05: "Arnott, Hsu & Moore 2005", bblz14: "Bailey et al. 2014", bt89: "Bernard & Thomas 1989", bgir92: "Brown et al. 1992", chs08: "Campbell, Hilscher & Szilagyi 2008", carhart97: "Carhart 1997", ckl03: "Chan, Karceski & Lakonishok 2003", damodaran: "Damodaran", dgu09: "DeMiguel, Garlappi & Uppal 2009", dy03: "Donohue & Yip 2003", fahl09: "Fahlenbrach 2009", ff93: "Fama & French 1993", ff15: "Fama & French 2015", ilv95: "Ikenberry, Lakonishok & Vermaelen 1995", jt93: "Jegadeesh & Titman 1993", jm76: "Jensen & Meckling 1976", kgw20: "Koller, Goedhart & Wessels 2020", ll01: "Lakonishok & Lee 2001", lintner65: "Lintner 1965", markowitz52: "Markowitz 1952", mm58: "Modigliani & Miller 1958", nm13: "Novy-Marx 2013", pw08: "Pontiff & Woodgate 2008", sharpe64: "Sharpe 1964", sharpe66: "Sharpe 1966", sharpe94: "Sharpe 1994", statman87: "Statman 1987" };
 const RULES_WHY = [
-  ["Only profitable companies", "Profitable firms have earned more than unprofitable ones trading at similar prices.", ["nm13", "ff15"]],
-  ["A cap on the price paid", "Cheaper stocks have beaten expensive ones over the long run.", ["ff93"]],
+  ["Quality first, and only profitable companies", "Profitable, well-run companies have earned a persistent premium over unprofitable ones at similar prices.", ["afp19", "nm13", "ff15"]],
   ["Return on capital above its cost", "A business creates value only when it earns more than its capital costs. The cost of equity comes from the CAPM.", ["kgw20", "sharpe64", "mm58"]],
-  ["Quality weighted most", "Profitable, well-run companies have earned a persistent premium.", ["afp19"]],
-  ["12-month momentum, skipping the last month", "Recent winners have tended to keep winning for 3 to 12 months.", ["jt93", "carhart97"]],
-  ["Founder and insider alignment", "Founder-led firms, insider buying and buybacks have preceded better returns. Heavy share issuance has preceded worse ones.", ["fahl09", "ll01", "ilv95", "pw08"]],
+  ["Catalysts come from data, not stories", "Earnings surprises keep moving prices for weeks; insider buying and buybacks have preceded better returns, heavy share issuance worse ones.", ["bt89", "ll01", "ilv95", "pw08"]],
+  ["Momentum confirms the catalyst", "Recent winners have tended to keep winning for 3 to 12 months, and losers to keep losing.", ["jt93", "carhart97"]],
+  ["Rerating room: cheap on earnings and cash flow", "Cheaper stocks have beaten expensive ones over the long run, but cheap alone can be a trap, so quality comes first.", ["ff93", "ahm05"]],
   ["Low debt", "Highly indebted, distress-prone firms have earned less, not more.", ["chs08"]],
-  ["Start from equal weights", "With real-world estimation error, simple equal weights have been hard to beat.", ["dgu09", "markowitz52"]],
-  ["Weight by fundamentals, not size", "Avoids automatically buying more of whatever has become most expensive.", ["ahm05"]],
-  ["Every holding between 5% and 20%", "With only a few stocks, no single company should dominate.", ["statman87"]],
-  ["Rebalance monthly, or on a 5-point drift", "Keeps the design on target while trading less.", ["dy03"]],
+  ["Concentrate in the best ideas, capped at 20%", "A handful of stocks already removes most single-company risk, so conviction can drive size within limits.", ["statman87", "markowitz52"]],
+  ["Cut what isn't working", "A name that trails the market by 20 points in 3 months leaves until the next monthly reset.", ["jt93"]],
+  ["Check weekly, reset monthly, trade on calm days", "Keeps the design on target while trading less, and avoids paying wide spreads in a panic.", ["dy03"]],
   ["Judged per unit of risk", "The Sharpe ratio: return above cash, divided by volatility.", ["sharpe66", "sharpe94"]],
-  ["Backtests flatter the past", "Applying today's winners to old prices adds hindsight. Only the live record is clean.", ["bgir92", "bblz14"]],
+  ["Backtests flatter the past", "Applying today's winners to old prices adds hindsight. Only the live record is clean, so v2 has no backtest: its record starts the day it went live.", ["bgir92", "bblz14"]],
 ];
 const PLAIN = { "PRSN method": "PRSN, our method", "Same, no momentum": "PRSN without momentum", "√cap × score": "Size × score", "Equal weight": "Equal weight", "Market-cap weight": "By company size", "√ market cap": "By size, softened", "Inverse volatility": "Calmer stocks weigh more",
   "Monthly + 5-pt drift": "PRSN: monthly + drift", "Monthly": "Monthly", "Quarterly": "Quarterly", "Annual": "Once a year", "Buy and hold": "Never reset" };
@@ -799,7 +955,10 @@ function Evidence({ D }) {
   ];
   const wins = rows.filter(([, a, b, , hi]) => hi ? a > b : a < b).length;
   const core = D.holdings.filter(h => !h.wildcard);
-  const mock = [...D.holdings].sort((a, b) => b.target - a.target);
+  const name = t => (D.holdings.find(h => h.ticker === t) || D.bench.find(b => b.ticker === t) || {}).name || t;
+  const plan = D.pending ? Object.entries(D.pending.meta).map(([t, m]) => ({ ticker: t, ...m })) : D.holdings.filter(h => h.tier || h.wildcard).map(h => ({ ticker: h.ticker, tier: h.wildcard ? "wildcard" : h.tier, composite: h.composite, target: h.target }));
+  const mock = [...plan].sort((a, b) => b.target - a.target);
+  const mockCash = Math.max(0, 1 - mock.reduce((a, h) => a + h.target, 0));
   const rb = date(D.last_rebalance, { month: "short", day: "numeric", year: "numeric" });
   const schemes = [...L.schemes].sort((a, b) => b.sharpe - a.sharpe), cads = [...L.cadences].sort((a, b) => b.sharpe - a.sharpe);
   const mxS = Math.max(...schemes.map(x => x.sharpe), ...cads.map(x => x.sharpe));
@@ -842,33 +1001,33 @@ function Evidence({ D }) {
           <p className="mt-3 mb-0 text-[12.5px] text-silver leading-relaxed max-w-[80ch]">The short version: more return, for more risk. PRSN moves about ${dec(S.beta)}× as much as the market, so it wins big in good stretches and hurts more in bad ones.</p>
         <//>
 
-        <${Sub3} n="02" title="Mock Run: $10,000 Through The Rules" note=${`Rebalance of ${rb}`}>
+        <${Sub3} n="02" title="Mock Run: $10,000 Through The Rules" note=${D.pending ? `Next trade, decided ${date(D.pending.decided, { month: "short", day: "numeric", year: "numeric" })}` : `Rebalance of ${rb}`}>
           <div className="flex flex-wrap items-center gap-1.5 text-[12px] mb-4">
-            ${[[D.universe_size, "tracked"], [`${core.length}+1`, "qualify"], ["0–100", "scored"], [`${pctU(R.floor, 0)}–${pctU(R.cap, 0)}`, "weights"], ["$10k", "split"]].map(([v, k], i, arr) => html`
+            ${[[D.universe_size, "tracked"], [mock.filter(h => h.tier !== "wildcard").length + (mock.some(h => h.tier === "wildcard") ? "+1" : ""), "held"], ["Q·C·R", "scored"], ["tiers", "sized"], ["$10k", "split"]].map(([v, k], i, arr) => html`
               <span key=${k} className="inline-flex items-center gap-1.5"><span className="inline-flex items-baseline gap-1 rounded-full bg-page border border-line px-2.5 py-1"><b className="num text-fg">${v}</b><span className="text-dim">${k}</span></span>${i < arr.length - 1 && html`<span className="text-dim">→</span>`}</span>`)}
           </div>
           <div className="overflow-x-auto -mx-1 px-1">
             <table className="w-full text-[12.5px] sm:text-[13px]">
               <thead><tr className="text-[10.5px] uppercase tracking-[0.08em] text-dim">
-                <th className="text-left font-semibold pb-2">Company</th><th className="text-right font-semibold pb-2 px-1.5">Score</th><th className="text-right font-semibold pb-2 px-1.5 hidden sm:table-cell">Tilt</th><th className="text-right font-semibold pb-2 px-1.5 hidden sm:table-cell whitespace-nowrap">After limits</th><th className="text-right font-semibold pb-2 px-1.5">Weight</th><th className="text-right font-semibold pb-2 pl-1.5">$</th>
+                <th className="text-left font-semibold pb-2">Company</th><th className="text-left font-semibold pb-2 px-1.5">Tier</th><th className="text-right font-semibold pb-2 px-1.5">Conviction</th><th className="text-right font-semibold pb-2 px-1.5">Weight</th><th className="text-right font-semibold pb-2 pl-1.5">$</th>
               </tr></thead>
               <tbody>
                 ${mock.map(h => html`<tr key=${h.ticker}>
-                  <td className="py-2 border-t border-line"><span className="inline-flex items-center gap-2"><${CoLogo} t=${h.ticker} size=${22} /><span className="num font-semibold text-fg">${h.ticker}</span></span></td>
-                  <td className="py-2 px-1.5 border-t border-line text-right num text-fg">${h.wildcard ? "–" : h.composite.toFixed(0)}</td>
-                  <td className="py-2 px-1.5 border-t border-line text-right num text-silver hidden sm:table-cell">${h.wildcard || !h.why ? "fixed" : h.why.tilt.toFixed(2) + "×"}</td>
-                  <td className="py-2 px-1.5 border-t border-line text-right num text-silver hidden sm:table-cell">${h.wildcard || !h.why ? "–" : pctU(h.why.final)}</td>
+                  <td className="py-2 border-t border-line"><span className="inline-flex items-center gap-2 min-w-0"><${CoLogo} t=${h.ticker} size=${22} /><span className="num font-semibold text-fg">${h.ticker}</span><span className="hidden sm:inline text-dim truncate">${name(h.ticker)}</span></span></td>
+                  <td className="py-2 px-1.5 border-t border-line">${h.tier ? html`<${Chip} kind=${TIER[h.tier].kind}>${TIER[h.tier].label}<//>` : "–"}</td>
+                  <td className="py-2 px-1.5 border-t border-line text-right num text-fg">${h.composite == null ? "–" : h.composite.toFixed(0)}</td>
                   <td className="py-2 px-1.5 border-t border-line text-right num font-semibold text-emerald">${pctU(h.target)}</td>
                   <td className="py-2 pl-1.5 border-t border-line text-right num font-semibold text-fg">${money(10000 * h.target, 0)}</td>
                 </tr>`)}
-                <tr><td className="pt-2 border-t-2 border-fg/20 font-semibold text-fg" colSpan="3">Total</td><td className="pt-2 border-t-2 border-fg/20 hidden sm:table-cell" colSpan="2"></td><td className="pt-2 border-t-2 border-fg/20 text-right num font-bold text-fg">${money(10000 * mock.reduce((a, h) => a + h.target, 0), 0)}</td></tr>
+                ${mockCash > 0.0005 && html`<tr><td className="py-2 border-t border-line text-silver" colSpan="3">Cash in T-bills</td><td className="py-2 px-1.5 border-t border-line text-right num text-silver">${pctU(mockCash)}</td><td className="py-2 pl-1.5 border-t border-line text-right num text-silver">${money(10000 * mockCash, 0)}</td></tr>`}
+                <tr><td className="pt-2 border-t-2 border-fg/20 font-semibold text-fg" colSpan="4">Total</td><td className="pt-2 border-t-2 border-fg/20 text-right num font-bold text-fg">${money(10000, 0)}</td></tr>
               </tbody>
             </table>
           </div>
-          <p className="mt-3 mb-0 text-[12.5px] text-silver leading-relaxed max-w-[80ch]">Each core company starts at an equal ${pctU(1 / core.length)}. Its score sets a tilt of ${R.tilt_floor} + ${R.tilt_range} × score ⁄ 100, the weights are rescaled and held between ${pctU(R.floor, 0)} and ${pctU(R.cap, 0)}, then shrunk to ${pctU(1 - R.wildcard.weight, 0)} to leave ${pctU(R.wildcard.weight, 0)} for the wildcard. Between rebalances, weights drift with prices.</p>
+          <p className="mt-3 mb-0 text-[12.5px] text-silver leading-relaxed max-w-[80ch]">Each company that passes gets a tier from its conviction rank. The tier sets a starting weight (core ~${pctU(R.tiers.core.base, 0)}, build ~${pctU(R.tiers.build.base, 0)}, toehold ~${pctU(R.tiers.toehold.base, 0)}), conviction nudges it up to ${Math.round(R.tiers.tilt * 100)}% either way, the weights are scaled up to fill the fund without passing any tier's cap, and whatever can't be placed stays in T-bills. Between trades, weights drift with prices.</p>
         <//>
 
-        <${Sub3} n="03" title="Other Ways To Build It" note=${`Same companies · return per unit of risk · after ${L.cost_bps} bp costs`}>
+        <${Sub3} n="03" title="Other Ways To Build It" note=${`Tested on the v1 rules and companies, 2022–2026 · return per unit of risk · after ${L.cost_bps} bp costs`}>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
             <div><div className="text-[12.5px] font-bold text-fg mb-2.5">How Much Of Each</div><${Bars} list=${schemes} hl="PRSN method" /></div>
             <div><div className="text-[12.5px] font-bold text-fg mb-2.5">How Often To Reset</div><${Bars} list=${cads} hl="Monthly + 5-pt drift" /></div>
@@ -956,10 +1115,10 @@ function App() {
     return () => ro.disconnect();
   }, []);
   const S = useSelection(D);
-  const active = useActiveSection(["leaders", "research", "breakdown", "detail", "evidence"]);
-  if (err) return html`<div className="p-10 text-dim">Data didn't load. Run <span className="num">python3 engine.py</span>, then reload.</div>`;
+  const active = useActiveSection(["leaders", "research", "breakdown", "detail", "decisions", "directory", "evidence"]);
+  if (err) return html`<div className="p-10 text-dim">Data didn't load. Run <span className="num">python -m engine daily</span>, then reload.</div>`;
   if (!D) return html`<div className="p-10 text-dim">Loading PRSN…</div>`;
-  const nav = [["leaders", "Leaders", "users"], ["research", "Research", "flask"], ["breakdown", "Holdings", "pie"]];
+  const nav = [["leaders", "Leaders", "users"], ["research", "Research", "flask"], ["breakdown", "Holdings", "pie"], ["decisions", "Decisions", "calendar"], ["directory", "Directory", "building"]];
   return html`
     <div className="relative min-h-screen overflow-x-clip">
       <a href="#leaders" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:m-2 focus:px-3 focus:py-2 focus:bg-white focus:rounded-lg">Skip to leaders</a>
@@ -968,9 +1127,9 @@ function App() {
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
           <button type="button" onClick=${() => goTo("why")} className="shrink-0" aria-label="PRSN, back to top"><${Logo} h=${30} /></button>
           <nav aria-label="Sections" className="flex items-center gap-1.5">
-            ${nav.map(([id, l, ic]) => html`<span key=${id} className="hidden md:inline-flex"><${Pill} onClick=${() => goTo(id)} active=${active === id || (id === "breakdown" && active === "detail")}><${Icon} n=${ic} size=${14} />${l}<//></span>`)}
+            ${nav.map(([id, l, ic]) => html`<span key=${id} className="hidden lg:inline-flex"><${Pill} onClick=${() => goTo(id)} active=${active === id || (id === "breakdown" && active === "detail")}><${Icon} n=${ic} size=${14} />${l}<//></span>`)}
             ${EMBED && html`<span className="hidden sm:inline-flex"><${Pill} href=${FULL_URL}>Open ↗<//></span>`}
-            <span className="hidden md:inline-flex"><${Pill} onClick=${() => goTo("evidence")} active=${active === "evidence"}><${Icon} n="scale" size=${14} />Evidence<//></span>
+            <span className="hidden lg:inline-flex"><${Pill} onClick=${() => goTo("evidence")} active=${active === "evidence"}><${Icon} n="scale" size=${14} />Evidence<//></span>
             <${Pill} primary onClick=${share} label="Share this page"><${Icon} n="share" size=${14} />${shared ? (shared === "Link copied" ? "Copied" : "Share") : "Share"}<//>
           </nav>
         </div>
@@ -986,14 +1145,17 @@ function App() {
         <${Breakdown} D=${D} selTicker=${D.holdings[S.sel].ticker} pick=${i => S.select(i, true)} />
         <${Detail} D=${D} h=${D.holdings[S.sel]} back=${S.back} />
         <${Years} D=${D} />
+        <${Account} D=${D} />
+        <${Decisions} D=${D} />
         <${Honorable} D=${D} />
         <${AllCompanies} D=${D} pick=${i => S.select(i, true)} />
+        <${Directory} D=${D} />
         <${Evidence} D=${D} />
       </main>
 
       <footer className="relative max-w-[1280px] mx-auto px-4 sm:px-6 pb-12 text-[11.5px] text-dim leading-relaxed">
         <div className="border-t border-line pt-5 grid gap-2">
-          <p className="m-0 max-w-[900px]">PRSN is a research index, not a fund, and not investment advice. Results before ${date(D.index.launch_date)} are an illustrative backtest that benefits from hindsight.</p>
+          <p className="m-0 max-w-[900px]">PRSN is a research index, not a fund, and not investment advice. I personally own positions in companies shown here. Results before ${date(D.index.launch_date)} are an illustrative backtest that benefits from hindsight; rules v${D.rules.version} apply from ${date(D.index.v2_date)}, with no backtest.</p>
           <${SourceLine} D=${D} />
           <p className="m-0">© Parsa Ara · <a className="text-silver hover:text-fg" href="https://www.linkedin.com/in/parsaara/" target="_blank" rel="noopener">LinkedIn</a> · <button type="button" onClick=${() => goTo("evidence")} className="text-silver hover:text-fg underline underline-offset-2">Evidence</button></p>
         </div>

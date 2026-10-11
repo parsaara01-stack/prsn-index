@@ -1,0 +1,82 @@
+# PRSN rulebook. Every number the engine uses lives here.
+# Change a rule = bump `version` and add a line to `changelog`. The site shows both.
+version: "2.0"
+effective: "2026-10-09"   # first decision under v2, made on this close
+changelog:
+  - {version: "1.0", date: "2026-10-05", note: "Launch. Six-factor score tilts an equal weight; 5-20% per name; monthly + 5-pt drift."}
+  - {version: "2.0", date: "2026-10-09", note: "Quality first, then catalyst and rerate. Conviction tiers instead of equal weight. Small caps from $50M in a capped sleeve. Weekly checks; trades wait for a calm VIX."}
+
+heritage: "CEO, co-CEO or executive chair of Persian heritage, full or partial: born in Iran, or with Iranian roots through family, of any ethnicity or faith. Documented by a public source, never inferred from a name."
+roles: ["CEO", "Co-CEO", "Executive Chairman", "Chairman"]
+
+# ---------- who can be considered (all must pass)
+gates:
+  min_mcap_b: 0.05            # $50M
+  small_cap_below_b: 0.5      # under $500M = small-cap sleeve
+  min_adv_musd: 5.0           # $ traded per day (20-day average), large and mid caps
+  min_adv_small_musd: 0.5     # same, small caps
+  exchanges: ["NYSE", "Nasdaq", "NYSE American"]
+  min_price: 1.0              # under $1 risks delisting
+  stop_rel_3m: -0.20          # thesis break: trails the S&P 500 by 20+ pts over 3 months -> out until the next monthly reset
+
+# ---------- the three scores, each a 0-100 percentile within the eligible list
+scores:
+  quality:    # is it a great business?
+    roic_spread: 0.30         # ROIC minus WACC
+    op_margin: 0.20
+    fcf_margin: 0.20
+    gross_margin: 0.10
+    roe: 0.10
+    leverage: 0.10            # lower net debt / EBITDA is better
+  catalyst:   # is there a reason it moves soon? (data, never stories)
+    fwd_eps_growth: 0.25      # analysts' next-year EPS vs trailing
+    rev_growth: 0.15
+    beat_rate: 0.15           # last 4 quarters vs consensus
+    surprise: 0.10
+    insider_net: 0.10         # insiders buying, last 6 months
+    buyback_yield: 0.10
+    momentum: 0.15            # 12-month return skipping the last month: the market confirming it
+  rerate:     # is it priced for less than it is?
+    cheap_pe: 0.30            # lower forward P/E (EV/EBITDA for REITs)
+    fcf_yield: 0.25
+    upside: 0.20              # analysts' average target vs price
+    peg: 0.15                 # P/E divided by growth
+    off_high: 0.10            # room below the 52-week high
+  conviction: {quality: 0.40, catalyst: 0.30, rerate: 0.30}
+  quality_gate_pct: 50        # quality must be in the top half of eligible names to be held at all (the wildcard aside)
+  require_profit: true        # ...and the business must make an operating profit
+
+# ---------- sizing: concentrate in the best ideas, Druckenmiller style
+tiers:
+  core:     {count: 4, base: 0.15, max: 0.20, min_catalyst: 50}   # biggest bets need a confirmed catalyst
+  build:    {count: 6, base: 0.05, max: 0.08}
+  toehold:  {base: 0.02, max: 0.03}
+  # Not enough strong ideas to fill 100%? The rest sits in T-bills rather than being forced into weaker names.
+  tilt: 0.25                  # within a tier, weight moves +/-25% with conviction
+cap: 0.20                     # no single name above 20%
+small_cap:
+  max_each: 0.02
+  max_total: 0.15
+wildcard:
+  weight: 0.03
+  rule: "Highest catalyst score among names that fail the quality gate but grow revenue 30%+ a year"
+  min_rev_growth: 0.30
+
+# ---------- when to trade
+rebalance:
+  check_day: "Friday"         # every week, after the close
+  reconstitution: "first Friday of the month"   # full re-score, new names can enter
+  drift_band: 0.05            # rebalance any week a weight is 5+ pts off target
+  execution:
+    window_days: 5            # trade within the next 5 trading days
+    vix_max: 30               # ...on the first day VIX closes under 30
+    vix_spike: 0.20           # ...and isn't 20%+ above its 5-day average
+    lag_days: 1               # signal at one close, index trades at the next close (no hindsight)
+cost_bps: 10
+
+# ---------- macro: shown and logged, not used in weights until a backtest earns it
+macro:
+  cash_dial: false
+  cash_when_tight: 0.20
+
+erp: 0.05                     # equity risk premium for the cost of equity

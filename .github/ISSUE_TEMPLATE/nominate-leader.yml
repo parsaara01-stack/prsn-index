@@ -1,0 +1,117 @@
+name: Nominate a leader
+description: Suggest a Persian or Iranian CEO, co-CEO or executive chair for the PRSN directory. You can nominate yourself.
+title: "Nomination: "
+labels: [nomination]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping build the directory of Persian and Iranian business leaders.
+
+        **Who qualifies:** a CEO, co-CEO or executive chair of Persian or Iranian heritage (born in Iran, or with Iranian family roots, of any ethnicity or faith) at
+        - a **US-listed public company** (NYSE, Nasdaq or NYSE American) worth $50M or more, or
+        - a **private company** at Series A or later, or with $10M+ raised.
+
+        **Every entry needs a public source** that states the person's Iranian birth or family roots, like an interview, a company bio or a news profile. Nobody is added because of how their name sounds. A maintainer checks each nomination before it goes live.
+
+        This form is public on GitHub. Please only share information that is already public.
+  - type: input
+    id: name
+    attributes:
+      label: Name
+      placeholder: Jane Doe
+    validations:
+      required: true
+  - type: input
+    id: title
+    attributes:
+      label: Title
+      placeholder: Co-founder & CEO
+    validations:
+      required: true
+  - type: input
+    id: company
+    attributes:
+      label: Company
+    validations:
+      required: true
+  - type: dropdown
+    id: type
+    attributes:
+      label: Public or private
+      options:
+        - Public company (US-listed)
+        - Private company
+    validations:
+      required: true
+  - type: input
+    id: ticker
+    attributes:
+      label: Ticker
+      description: Public companies only.
+  - type: dropdown
+    id: exchange
+    attributes:
+      label: Exchange
+      options:
+        - Nasdaq
+        - NYSE
+        - NYSE American
+        - Not listed
+  - type: input
+    id: website
+    attributes:
+      label: Website
+      placeholder: https://
+  - type: input
+    id: sector
+    attributes:
+      label: Sector
+      placeholder: AI software, biotech, real estate...
+  - type: input
+    id: hq
+    attributes:
+      label: Headquarters
+      placeholder: City, State
+  - type: input
+    id: since
+    attributes:
+      label: Leader since
+      placeholder: "2015"
+  - type: dropdown
+    id: founder
+    attributes:
+      label: Founder
+      options:
+        - "Yes"
+        - "No"
+  - type: input
+    id: source
+    attributes:
+      label: Heritage source
+      description: A link to a public page that states the person's Iranian birth or family roots.
+      placeholder: https://
+    validations:
+      required: true
+  - type: textarea
+    id: background
+    attributes:
+      label: Background
+      description: One or two sentences, as they'd appear on the site.
+      placeholder: Born in Tehran; came to the US at 12. Founded the company in 2015.
+    validations:
+      required: true
+  - type: input
+    id: funding
+    attributes:
+      label: Funding or size
+      description: Private companies only, with a link if possible.
+      placeholder: Series B, $40M raised
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Consent
+      options:
+        - label: Everything above is already public, and if I'm nominating someone else, I believe they'd be comfortable being listed.
+          required: true
+        - label: I am the person being nominated.

@@ -1,0 +1,96 @@
+name: PRSN engine
+
+# Hourly in market hours: live level. After every close: extend the index (and trade if a rebalance's calm day came).
+# Friday after the close: refresh fundamentals, make the weekly decision, check SEC filings. Every run redeploys the site.
+on:
+  schedule:
+    - cron: "30 21 * * 1-4"     # Mon-Thu, after the close: daily
+    - cron: "30 21 * * 5"       # Friday, after the close: weekly decision
+    - cron: "7 14-20 * * 1-5"   # market hours: live level (skips itself outside 9:30-4:15 ET)
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      step:
+        description: Engine step
+        type: choice
+        options: [daily, weekly, intraday, monitor, deploy-only]
+        default: daily
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+  issues: write
+
+concurrency:
+  group: prsn
+  cancel-in-progress: false
+
+jobs:
+  engine:
+    if: github.event_name != 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      SEC_CONTACT: ${{ secrets.SEC_CONTACT }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -r requirements.txt
+      - name: Pick the step
+        id: step
+        env:
+          EVENT: ${{ github.event_name }}
+          SCHEDULE: ${{ github.event.schedule }}
+          INPUT: ${{ inputs.step }}
+        run: |
+          if [ "$EVENT" = "workflow_dispatch" ]; then s="$INPUT"
+          elif [ "$SCHEDULE" = "30 21 * * 5" ]; then s=weekly
+          elif [ "$SCHEDULE" = "7 14-20 * * 1-5" ]; then s=intraday
+          else s=daily; fi
+          echo "step=$s" >> "$GITHUB_OUTPUT"
+      - name: Run the engine
+        if: steps.step.outputs.step != 'deploy-only'
+        env:
+          STEP: ${{ steps.step.outputs.step }}
+        run: |
+          python -m engine "$STEP"
+          if [ "$STEP" = "weekly" ]; then ALERTS_OUT=alerts.md python -m engine monitor || true; fi
+      - name: Open issues for SEC alerts
+        if: hashFiles('alerts.md') != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python .github/scripts/open_alerts.py alerts.md
+      - name: Commit data
+        env:
+          STEP: ${{ steps.step.outputs.step }}
+        run: |
+          git config user.name "prsn-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data
+          if git diff --cached --quiet; then echo "no changes"; exit 0; fi
+          git commit -m "data: $STEP $(date -u +%F)"
+          git pull --rebase origin main
+          git push
+
+  deploy:
+    needs: engine
+    if: always() && needs.engine.result != 'failure' && needs.engine.result != 'cancelled'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: deployment
+        uses: actions/deploy-pages@v4

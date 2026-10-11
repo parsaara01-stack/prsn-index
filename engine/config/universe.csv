@@ -1,0 +1,28 @@
+ticker,name,ceo,role,founder,ceo_since,sector,reit,exchange,heritage_source_url,confidence,status,note
+APP,AppLovin,Adam Foroughi,CEO,true,2012,Software / AdTech,false,Nasdaq,https://finance.yahoo.com/news/applovin-adam-foroughi-profile-125452914.html,confirmed,active,
+UBER,Uber,Dara Khosrowshahi,CEO,false,2017,Mobility / Delivery,false,NYSE,https://en.wikipedia.org/wiki/Dara_Khosrowshahi,confirmed,active,
+INTU,Intuit,Sasan Goodarzi,"Chair & CEO",false,2019,Software / Fintech,false,Nasdaq,https://www.businessroundtable.org/about-us/members/sasan-goodarzi-chief-executive-officer-intuit,confirmed,active,
+PLD,Prologis,Hamid Moghadam,Executive Chairman,true,1983,Logistics Real Estate (REIT),true,NYSE,https://en.wikipedia.org/wiki/Hamid_Moghadam,confirmed,active,CEO until Dec 2025; executive chair since Jan 2026
+NVO,Novo Nordisk,Maziar Mike Doustdar,CEO,false,2025,Pharma / Obesity & Diabetes,false,NYSE,https://www.novonordisk.com/news-and-media/latest-news/meet-mike-doustdar.html,confirmed,active,US-listed ADR of a Danish company
+TDY,Teledyne Technologies,Robert Mehrabian,Executive Chairman,false,2000,Industrial Tech / Defense,false,NYSE,https://carnegie.org/awards/honoree/robert-mehrabian,confirmed,active,Contract runs to Dec 2026
+LTH,Life Time,Bahram Akradi,"Founder, Chair & CEO",true,1992,Fitness / Consumer,false,NYSE,https://www.ilctr.org/about-immigrants/immigrant-entrepreneurs/hall-of-fame/bahram-akradi-2/,confirmed,active,
+TTAN,ServiceTitan,Ara Mahdessian,CEO,true,2012,Vertical Software,false,Nasdaq,https://75andsunny.vc/officehours/ara-mahdessian,confirmed,active,
+LUNR,Intuitive Machines,Kam Ghaffarian,Chairman,true,2013,Space Infrastructure,false,Nasdaq,https://en.wikipedia.org/wiki/Kam_Ghaffarian,confirmed,active,2026 proxy titles him Chairman of the Board
+XE,X-energy,Kam Ghaffarian,Executive Chairman,true,2009,Nuclear Energy (SMRs),false,Nasdaq,https://en.wikipedia.org/wiki/Kam_Ghaffarian,likely,active,Public since April 2026 IPO
+SOUN,SoundHound AI,Keyvan Mohajer,CEO,true,2005,Voice AI,false,Nasdaq,https://en.everybodywiki.com/Keyvan_Mohajer,likely,active,Heritage source is weak; stronger source wanted
+OPEN,Opendoor,Kaz Nejatian,CEO,false,2025,Proptech,false,Nasdaq,https://www.macleans.ca/politics/kasra-nejatian-must-decide-whether-to-test-trumps-travel-ban/,confirmed,active,
+AEVA,Aeva Technologies,Soroush Salehian,CEO,true,2016,Lidar / Autonomy,false,Nasdaq,https://twitter.com/soroushs,likely,active,Heritage source is weak; stronger source wanted
+SERV,Serve Robotics,Ali Kashani,CEO,true,2021,Robotics / Delivery,false,Nasdaq,https://vantechjournal.com/p/the-man-who-wants-to-put-robots-on-every-street,confirmed,active,
+BLND,Blend Labs,Nima Ghamsari,"Head of Blend & Chair",true,2012,Mortgage Software,false,NYSE,https://www.forbesargentina.com/negocios/de-jugar-poker-conquistar-mercado-hipotecario-historia-nima-ghamsari-n7216/amp,confirmed,active,
+RSVR,Reservoir Media,Golnar Khosrowshahi,CEO,true,2007,Music Publishing,false,Nasdaq,https://en.wikipedia.org/wiki/Golnar_Khosrowshahi,confirmed,active,Take-private bids under review
+SG,Sweetgreen,Jonathan Neman,"Chair & CEO",true,2007,Restaurants,false,NYSE,https://www.myjewishlearning.com/the-nosher/popular-salad-chain-sweetgreen-was-inspired-by-a-jewish-grandma/,confirmed,active,
+BH,Biglari Holdings,Sardar Biglari,"Chair & CEO",true,2008,Restaurants / Insurance,false,NYSE,https://en.wikipedia.org/wiki/Sardar_Biglari,confirmed,active,Class B shares
+GH,Guardant Health,AmirAli Talasaz,Co-CEO,true,2012,Cancer Diagnostics,false,Nasdaq,https://en.wikipedia.org/wiki/AmirAli_Talasaz,confirmed,active,
+SMMT,Summit Therapeutics,Maky Zanganeh,Co-CEO,false,2022,Oncology Biotech,false,Nasdaq,https://www.forbes.com/sites/kerryadolan/2025/06/03/the-unlikely-path-from-iranian-revolution-to-billionaire-biotech-ceo/,confirmed,active,
+TARS,Tarsus Pharmaceuticals,Bobak Azamian,"Chair & CEO",true,2016,Eye Care Biotech,false,Nasdaq,https://news2.rice.edu/1999/01/14/azamian-to-pursue-research-goals-through-rhodes/,confirmed,active,
+PGEN,Precigen,Helen Sabzevari,CEO,false,2020,Gene & Cell Therapy,false,Nasdaq,https://www.genengnews.com/?p=185016,confirmed,active,
+SEER,Seer,Omid Farokhzad,"Chair & CEO",true,2017,Proteomics Tools,false,Nasdaq,https://www.mustafaprize.org/en/news?id=1845,confirmed,active,
+NTHI,NeOnc Technologies,Amir Heshmatpour,"CEO & Executive Chairman",false,2025,Brain Cancer Biotech,false,Nasdaq,https://www.jpost.com/j-spot/article-888654,confirmed,active,
+AAZ,Anglo Asian Mining,Reza Vaziri,CEO,false,,Mining,false,London,,unverified,foreign,Listed in London only; not buyable on US exchanges
+WELL,WELL Health,Hamed Shahbazi,CEO,true,,Digital Health,false,Toronto,,unverified,foreign,Listed in Toronto only; not buyable on US exchanges
+SATS,EchoStar,Hamid Akhavan,CEO,false,,Satellite / Telecom,false,Nasdaq,,unverified,former,Akhavan left all EchoStar roles July 2026

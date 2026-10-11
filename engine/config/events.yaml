@@ -1,0 +1,5 @@
+# Event exclusions. A name listed here is removed at the next weekly check and stays out until deleted from this list.
+# Use for facts the price data can't see: going-concern warnings, a signed takeover, an interim or departed leader.
+# Each entry needs a source. Example:
+#   - {ticker: XYZ, detail: "Signed agreement to be acquired at $12/share.", source: "https://www.sec.gov/...", added: "2026-10-16"}
+exclude: []

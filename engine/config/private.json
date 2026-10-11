@@ -1,0 +1,70 @@
+[
+ {
+  "id": "DATABRICKS",
+  "name": "Databricks",
+  "ceo": "Ali Ghodsi",
+  "role": "CEO",
+  "founder": true,
+  "ceo_since": 2016,
+  "sector": "Data & AI Software",
+  "site": "https://www.databricks.com",
+  "ipo_ticker": null,
+  "note": "Private, so it can't be in the index: there is no daily price to track. Followed here through the valuation at each funding round. If it goes public, it gets screened like everyone else.",
+  "leader": {
+   "line": "Born in Iran. Fled to Sweden at six. Co-founded Databricks.",
+   "photo": "leaders/databricks.jpg",
+   "story": "Ali Ghodsi was born in Iran in 1978. His family fled to Sweden when he was six, where he grew up and earned a PhD in distributed systems at KTH. As a visiting scholar at UC Berkeley he helped create Apache Spark, co-founded Databricks in 2013, and has run it since 2016.",
+   "credit": "Photo: Alighodsi, CC BY-SA 4.0, via Wikimedia Commons",
+   "credit_url": "https://commons.wikimedia.org/wiki/File:Ali_Ghodsi.jpg"
+  },
+  "valuations": [
+   {
+    "date": "2021-08-31",
+    "round": "Series H",
+    "valuation_b": 38,
+    "source": "https://en.wikipedia.org/wiki/Databricks"
+   },
+   {
+    "date": "2023-09-14",
+    "round": "Series I",
+    "valuation_b": 43,
+    "source": "https://en.wikipedia.org/wiki/Databricks"
+   },
+   {
+    "date": "2024-12-17",
+    "round": "Series J",
+    "valuation_b": 62,
+    "source": "https://en.wikipedia.org/wiki/Databricks"
+   },
+   {
+    "date": "2025-09-08",
+    "round": "Series K",
+    "valuation_b": 100,
+    "source": "https://techcrunch.com/2025/09/08/databricks-confirms-new-100b-valuation-on-4b-arr/"
+   },
+   {
+    "date": "2026-02-09",
+    "round": "Series L",
+    "valuation_b": 134,
+    "source": "https://www.cnbc.com/2026/02/09/databricks-completes-5-billion-funding-round-with-2-billion-in-debt.html"
+   },
+   {
+    "date": "2026-08-13",
+    "round": "Series M",
+    "valuation_b": 190,
+    "source": "https://www.cnbc.com/2026/08/13/databricks-funding-round-190-billion-valuation.html"
+   }
+  ],
+  "latest": {
+   "date": "2026-08-13",
+   "round": "Series M",
+   "valuation_b": 190,
+   "source": "https://www.cnbc.com/2026/08/13/databricks-funding-round-190-billion-valuation.html"
+  },
+  "since": "2021-12-31",
+  "mult": 5.0,
+  "ann": 0.40192068879170106,
+  "prsn_mult": 2.19163,
+  "bench_mult": 1.7476500000000001
+ }
+]

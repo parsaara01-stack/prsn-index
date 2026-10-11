@@ -1,0 +1,32 @@
+name: Correction or removal
+description: Fix something about a listed leader, or ask to be removed from the directory.
+title: "Correction: "
+labels: [correction]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Anyone can ask for a correction. If you're listed and want to be removed, say so below and you will be, no questions asked.
+  - type: input
+    id: who
+    attributes:
+      label: Who or which company
+    validations:
+      required: true
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Request
+      options:
+        - Correct something
+        - Remove me from the directory
+        - This person has left the role
+    validations:
+      required: true
+  - type: textarea
+    id: details
+    attributes:
+      label: Details
+      description: What should change, with a link if you have one.
+    validations:
+      required: true

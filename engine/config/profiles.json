@@ -1,0 +1,187 @@
+{
+ "APP": {
+  "name": "AppLovin",
+  "ceo": "Adam Foroughi",
+  "role": "CEO",
+  "sector": "Software / AdTech",
+  "thesis": "Adam Foroughi started AppLovin in 2012 and still runs it. They sold the mobile games business in 2025 to go all-in on the ad engine, and the margins show it. Founder-run, growing fast, and the stock is well off its high.",
+  "leader": {
+   "line": "Born in Iran. Fled the war as a child. Co-founded AppLovin.",
+   "photo": "leaders/app.jpg",
+   "story": "Adam Foroughi was born in Iran in 1980 and came to America as a child when his family fled the Iran-Iraq War. He grew up in Laguna Niguel, California, studied economics at UC Berkeley and traded derivatives before co-founding AppLovin in 2012. He took it public in 2021 and still runs it.",
+   "credit": "Photo: AppLovin, 2025 proxy statement",
+   "credit_url": "https://www.sec.gov/Archives/edgar/data/1751008/000175100825000041/app-20250421.htm"
+  },
+  "ir": "https://investors.applovin.com"
+ },
+ "INTU": {
+  "name": "Intuit",
+  "ceo": "Sasan Goodarzi",
+  "role": "CEO",
+  "sector": "Software / FinTech",
+  "thesis": "Sasan Goodarzi has run Intuit since 2019: TurboTax, QuickBooks, Credit Karma, Mailchimp. Top-tier software margins, and the stock has been cut way down this year. That's why it has the best value score in the index.",
+  "leader": {
+   "line": "Arrived from Tehran at nine. Engineer. CEO of Intuit since 2019.",
+   "photo": "leaders/intu.jpg",
+   "credit": "Photo: Intuit Corp., CC BY 4.0, via Wikimedia Commons",
+   "story": "Sasan Goodarzi came to the United States from Tehran at nine, during the revolution, and finished high school in Orlando. An electrical engineer with a Kellogg MBA, he worked at Honeywell and Invensys, joined Intuit in 2004 and became CEO in 2019.",
+   "credit_url": "https://commons.wikimedia.org/wiki/File:Sasan_Goodarzi.jpg"
+  },
+  "ir": "https://investors.intuit.com"
+ },
+ "TDY": {
+  "name": "Teledyne Technologies",
+  "ceo": "Robert Mehrabian",
+  "role": "Executive Chairman",
+  "sector": "Industrial Tech / Defense",
+  "thesis": "Robert Mehrabian was born in Tehran and ran Teledyne as CEO from its 1999 spin-off through 2018, turning it into a buy-and-build machine for sensors, cameras and defense electronics. He has been Executive Chairman since 2019. Steady growth, real free cash flow, and a long record of smart acquisitions.",
+  "leader": {
+   "line": "Born in Tehran. MIT doctorate. Led Carnegie Mellon, then Teledyne.",
+   "photo": "leaders/tdy.jpg",
+   "story": "Robert Mehrabian was born in Tehran in 1941 and earned his bachelor's and doctorate at MIT. A materials scientist, he was president of Carnegie Mellon University from 1990 to 1997, then led Teledyne as CEO from its 1999 spin-off through 2018. He has been Executive Chairman since 2019.",
+   "credit": "Photo: Teledyne Technologies",
+   "credit_url": "https://www.teledyne.com/who-we-are/executive-profiles/robert-mehrabian"
+  },
+  "ir": "https://investors.teledyne.com"
+ },
+ "LTH": {
+  "name": "Life Time Group",
+  "ceo": "Bahram Akradi",
+  "role": "CEO",
+  "sector": "Premium Fitness Clubs",
+  "thesis": "Bahram Akradi founded Life Time in 1992 and still owns a big piece of it. Profitable and growing, but it carries the most debt of the four and is spending heavily on new clubs, so free cash flow is negative for now. That keeps it at the minimum weight.",
+  "leader": {
+   "line": "Left Tehran at 17. Bet everything on one club in 1992.",
+   "photo": "leaders/lth.jpg",
+   "story": "Bahram Akradi left Tehran at 17 in 1978, worked in restaurants to pay for an electrical engineering degree at the University of Colorado, and found his way into the health-club business. In 1992 he sold everything he owned to open one club in Brooklyn Park, Minnesota, a site where three clubs had already failed. That club became Life Time.",
+   "credit": "Photo: Life Time",
+   "credit_url": "https://experiencelife.lifetime.life/article/unsung-heroes/"
+  },
+  "ir": "https://ir.lifetime.life"
+ },
+ "UBER": {
+  "name": "Uber Technologies",
+  "ceo": "Dara Khosrowshahi",
+  "role": "CEO",
+  "sector": "Mobility / Delivery",
+  "thesis": "Dara took over in 2017 when Uber was burning billions a year. It now makes real money and throws off free cash. He's a hired CEO, so it scores low on founder skin. It's in for the business, and the size of it.",
+  "leader": {
+   "line": "Born in Tehran. Ran Expedia for 12 years. Made Uber profitable.",
+   "photo": "leaders/uber.jpg",
+   "credit": "Photo: Uber",
+   "story": "Dara Khosrowshahi was born in Tehran in 1969. His family left as the revolution began and rebuilt in New York. After Brown, he spent twelve years running Expedia, then took over Uber in 2017 and turned a company losing billions into one that makes money.",
+   "credit_url": "https://www.uber.com/us/en/about/leadership/dara-khosrowshahi/"
+  },
+  "ir": "https://investor.uber.com"
+ },
+ "PLD": {
+  "name": "Prologis",
+  "ceo": "Hamid Moghadam",
+  "role": "Executive Chairman",
+  "sector": "Logistics Real Estate",
+  "thesis": "Hamid Moghadam co-founded Prologis in 1983 and built it into the biggest warehouse landlord in the world. He handed the CEO job to Dan Letter in January 2026 and stays on as Executive Chairman. Huge, steady cash flows, and the AI data-center build-out is a new tailwind for its land.",
+  "leader": {
+   "line": "Left Tehran at 14. MIT at 16. Built the world's largest logistics landlord.",
+   "photo": "leaders/pld.jpg",
+   "story": "Hamid Moghadam left Tehran at 14, finished school in Switzerland and arrived at MIT at 16. After a Stanford MBA he co-founded AMB in 1983, and in 2011 merged it with ProLogis to create the largest logistics real estate company in the world. He became Executive Chairman in 2026.",
+   "credit": "Photo: Prologis",
+   "credit_url": "https://www.prologis.com/about/leadership-board-directors"
+  },
+  "ir": "https://ir.prologis.com"
+ },
+ "NVO": {
+  "name": "Novo Nordisk",
+  "ceo": "Maziar Mike Doustdar",
+  "role": "CEO",
+  "sector": "Pharma / Obesity & Diabetes",
+  "thesis": "Mike Doustdar was born in Iran and took over Novo Nordisk in August 2025, the first non-Dane to run it since 1923. Ozempic and Wegovy made it one of the most profitable drug makers on earth. The stock got crushed on competition fears, so the price is now low for margins this high.",
+  "leader": {
+   "line": "Fled Iran at 12. Started as a clerk. Now runs Novo Nordisk.",
+   "photo": "leaders/nvo.jpg",
+   "credit": "Photo: Novo Nordisk",
+   "story": "Mike Doustdar fled Iran at 12 and joined Novo Nordisk in 1992 as an office clerk in Vienna. Over three decades he worked through finance, logistics and marketing, then ran the company's business across 150 countries. In 2025 he became the first non-Dane to lead Novo Nordisk in its 102-year history.",
+   "credit_url": "https://www.novonordisk.com/news-and-media/latest-news/meet-mike-doustdar.html"
+  },
+  "ir": "https://www.novonordisk.com/investors.html"
+ },
+ "LUNR": {
+  "name": "Intuitive Machines",
+  "ceo": "Kam Ghaffarian",
+  "role": "Executive Chairman",
+  "sector": "Space Infrastructure",
+  "thesis": "Intuitive Machines landed the first private spacecraft on the Moon in 2024 and now builds landers, lunar data relays and space infrastructure for NASA and commercial customers. It isn't profitable yet, but its revenue is growing faster than any other company in the universe. That's exactly what the wildcard slot is for.",
+  "leader": {
+   "line": "Grew up in Iran watching Apollo 11. Took a company to the Moon.",
+   "photo": "leaders/lunr.jpg",
+   "credit": "Photo: Intuitive Machines",
+   "story": "Kam Ghaffarian grew up in Iran, where he watched the Apollo 11 landing on television, and moved to the United States to chase it. He built SGT into NASA's second-largest engineering contractor, sold it to KBR in 2018, and co-founded Axiom Space, X-energy and Intuitive Machines, the first private company to land on the Moon.",
+   "credit_url": "https://intuitivemachines.gcs-web.com/board-member/dr-kamal-ghaffarian"
+  },
+  "ir": "https://investors.intuitivemachines.com"
+ },
+ "ECHO": {
+  "name": "EchoStar",
+  "ceo": "Hamid Akhavan",
+  "role": "CEO"
+ },
+ "GH": {
+  "name": "Guardant Health",
+  "ceo": "AmirAli Talasaz (co-CEO)",
+  "role": "Co-CEO"
+ },
+ "SMMT": {
+  "name": "Summit Therapeutics",
+  "ceo": "Maky Zanganeh (co-CEO)",
+  "role": "Co-CEO"
+ },
+ "TARS": {
+  "name": "Tarsus Pharmaceuticals",
+  "ceo": "Bobak Azamian",
+  "role": "CEO"
+ },
+ "SOUN": {
+  "name": "SoundHound AI",
+  "ceo": "Keyvan Mohajer",
+  "role": "CEO"
+ },
+ "OPEN": {
+  "name": "Opendoor",
+  "ceo": "Kaz Nejatian",
+  "role": "CEO"
+ },
+ "SG": {
+  "name": "Sweetgreen",
+  "ceo": "Jonathan Neman",
+  "role": "CEO"
+ },
+ "AEVA": {
+  "name": "Aeva Technologies",
+  "ceo": "Soroush Salehian",
+  "role": "CEO"
+ },
+ "WELL": {
+  "name": "WELL Health",
+  "ceo": "Hamed Shahbazi",
+  "role": "CEO"
+ },
+ "RSVR": {
+  "name": "Reservoir Media",
+  "ceo": "Golnar Khosrowshahi",
+  "role": "CEO"
+ },
+ "AAZ": {
+  "name": "Anglo Asian Mining",
+  "ceo": "Reza Vaziri",
+  "role": "CEO"
+ },
+ "SERV": {
+  "name": "Serve Robotics",
+  "ceo": "Ali Kashani",
+  "role": "CEO"
+ },
+ "BLND": {
+  "name": "Blend Labs",
+  "ceo": "Nima Ghamsari",
+  "role": "CEO"
+ }
+}

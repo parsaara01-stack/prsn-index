@@ -1,0 +1,294 @@
+{
+ "schemes": [
+  {
+   "name": "PRSN method",
+   "ann": 0.17752620921160966,
+   "vol": 0.29253938341196983,
+   "sharpe": 0.5722226524373017,
+   "max_dd": -0.4353850367865135,
+   "turnover_yr": 0.6458025504494451,
+   "rebalances": 69,
+   "note": "Score only, no size, momentum, 5\u201320% limits"
+  },
+  {
+   "name": "Same, no momentum",
+   "ann": 0.18343359263219927,
+   "vol": 0.2962868667178413,
+   "sharpe": 0.585487803935889,
+   "max_dd": -0.43847066334931106,
+   "turnover_yr": 0.6524158383006488,
+   "rebalances": 69,
+   "note": "Fundamentals only"
+  },
+  {
+   "name": "\u221acap \u00d7 score",
+   "ann": 0.12426012701029565,
+   "vol": 0.2826438063210875,
+   "sharpe": 0.4175907890720218,
+   "max_dd": -0.38237854814093586,
+   "turnover_yr": 0.512335570946044,
+   "rebalances": 69,
+   "note": "Old method: bigger gets more"
+  },
+  {
+   "name": "Equal weight",
+   "ann": 0.16781304096201333,
+   "vol": 0.28120317607398165,
+   "sharpe": 0.5541236032914317,
+   "max_dd": -0.4161848184832613,
+   "turnover_yr": 0.584213729828207,
+   "rebalances": 63,
+   "note": "Every name the same"
+  },
+  {
+   "name": "Market-cap weight",
+   "ann": 0.04360669110913973,
+   "vol": 0.272428286845385,
+   "sharpe": 0.1481992544531747,
+   "max_dd": -0.3373844636729195,
+   "turnover_yr": 0.18134631286594946,
+   "rebalances": 65,
+   "note": "Biggest gets most"
+  },
+  {
+   "name": "\u221a market cap",
+   "ann": 0.09563055641926788,
+   "vol": 0.2696668346065058,
+   "sharpe": 0.328243436960163,
+   "max_dd": -0.346093668063161,
+   "turnover_yr": 0.34930465587155884,
+   "rebalances": 64,
+   "note": "Size, compressed"
+  },
+  {
+   "name": "Inverse volatility",
+   "ann": 0.14620676547551992,
+   "vol": 0.24591868472023054,
+   "sharpe": 0.5194382605300969,
+   "max_dd": -0.3584432590162422,
+   "turnover_yr": 0.7362927247016753,
+   "rebalances": 61,
+   "note": "Calmer names get more"
+  }
+ ],
+ "cadences": [
+  {
+   "name": "Monthly + 5-pt drift",
+   "ann": 0.17752620921160966,
+   "vol": 0.29253938341196983,
+   "sharpe": 0.5722226524373017,
+   "max_dd": -0.4353850367865135,
+   "turnover_yr": 0.6458025504494451,
+   "rebalances": 69,
+   "note": "Live rule"
+  },
+  {
+   "name": "Monthly",
+   "ann": 0.17795146138982187,
+   "vol": 0.29373179685744377,
+   "sharpe": 0.5722385253685355,
+   "max_dd": -0.4353850367865135,
+   "turnover_yr": 0.5901868622944858,
+   "rebalances": 57,
+   "note": ""
+  },
+  {
+   "name": "Quarterly",
+   "ann": 0.17478846046461283,
+   "vol": 0.31630744319517823,
+   "sharpe": 0.5455348723255441,
+   "max_dd": -0.43540064367797493,
+   "turnover_yr": 0.36166959591372877,
+   "rebalances": 20,
+   "note": "S&P / MSCI style"
+  },
+  {
+   "name": "Annual",
+   "ann": 0.28167439274593886,
+   "vol": 0.3333700001036941,
+   "sharpe": 0.7956699950061713,
+   "max_dd": -0.4226028944012208,
+   "turnover_yr": 0.23250199673896987,
+   "rebalances": 5,
+   "note": ""
+  },
+  {
+   "name": "Buy and hold",
+   "ann": 0.09442360653199033,
+   "vol": 0.38398173174700256,
+   "sharpe": 0.3267341992069051,
+   "max_dd": -0.4226028944012208,
+   "turnover_yr": 0.036396770589469114,
+   "rebalances": 1,
+   "note": "Never rebalance"
+  }
+ ],
+ "momentum": {
+  "months": 56,
+  "avg_spread": 0.00792261917993505,
+  "hit_rate": 0.5535714285714286
+ },
+ "trend": {
+  "above_avg": 0.027709462560330845,
+  "below_avg": 0.028694306498586543,
+  "above_n": 253,
+  "below_n": 179
+ },
+ "regimes": {
+  "Rates": [
+   {
+    "label": "10-yr yield rising",
+    "months": 32,
+    "prsn": -0.005105379493953281,
+    "spx": -0.005007231220926049
+   },
+   {
+    "label": "10-yr yield falling",
+    "months": 26,
+    "prsn": 0.04387537353623264,
+    "spx": 0.029961695216765727
+   }
+  ],
+  "Volatility": [
+   {
+    "label": "VIX 20 or higher",
+    "months": 17,
+    "prsn": 0.018846941772899865,
+    "spx": 0.011588551005359507
+   },
+   {
+    "label": "VIX under 20",
+    "months": 41,
+    "prsn": 0.016024135560884046,
+    "spx": 0.010287007548174725
+   }
+  ],
+  "Dollar": [
+   {
+    "label": "Dollar rising",
+    "months": 29,
+    "prsn": -0.005535964888278769,
+    "spx": -0.006554609511138628
+   },
+   {
+    "label": "Dollar falling",
+    "months": 29,
+    "prsn": 0.039238984479159585,
+    "spx": 0.02789159835825157
+   }
+  ]
+ },
+ "macro_now": {
+  "ten_year": 0.05269000053405762,
+  "ten_year_chg_3m": 0.007000002861022949,
+  "vix": 15.0,
+  "dollar_chg_3m": 0.00786737402212756,
+  "spx_vs_sma200": 0.08488767688741827,
+  "t_bill": 0.040369997024536135,
+  "regime": "Risk-on"
+ },
+ "corr": {
+  "tickers": [
+   "APP",
+   "UBER",
+   "INTU",
+   "LTH",
+   "NVO",
+   "PLD",
+   "TDY",
+   "LUNR"
+  ],
+  "matrix": [
+   [
+    1.0,
+    0.2,
+    0.22,
+    0.07,
+    0.12,
+    0.01,
+    0.08,
+    0.21
+   ],
+   [
+    0.2,
+    1.0,
+    0.29,
+    0.16,
+    0.23,
+    0.06,
+    0.12,
+    0.15
+   ],
+   [
+    0.22,
+    0.29,
+    1.0,
+    0.03,
+    0.22,
+    -0.09,
+    -0.14,
+    -0.04
+   ],
+   [
+    0.07,
+    0.16,
+    0.03,
+    1.0,
+    0.25,
+    0.22,
+    0.2,
+    0.14
+   ],
+   [
+    0.12,
+    0.23,
+    0.22,
+    0.25,
+    1.0,
+    0.17,
+    0.04,
+    0.11
+   ],
+   [
+    0.01,
+    0.06,
+    -0.09,
+    0.22,
+    0.17,
+    1.0,
+    0.23,
+    0.09
+   ],
+   [
+    0.08,
+    0.12,
+    -0.14,
+    0.2,
+    0.04,
+    0.23,
+    1.0,
+    0.42
+   ],
+   [
+    0.21,
+    0.15,
+    -0.04,
+    0.14,
+    0.11,
+    0.09,
+    0.42,
+    1.0
+   ]
+  ],
+  "avg": 0.13464285714285715
+ },
+ "conclusions": [
+  "Weighting: Same, no momentum had the best risk-adjusted return (Sharpe 0.59). Our method ranks 2 of 7 at 0.57, after 10 bp trading costs.",
+  "Momentum: it made little difference over this period (Sharpe 0.57 with vs 0.59 without). Names in the top half on 12-month momentum beat the bottom half the next month 55% of the time, by +0.8 pts on average.",
+  "Trend: names above their 200-day average returned +2.8% the following month on average, vs +2.9% for names below it. That's no real edge, so the 200-day line is shown for context, not used in the weights.",
+  "Rebalancing: annual scored best (Sharpe 0.80), but the gaps between cadences are within noise for 57 months of data. Monthly plus a drift trigger keeps weights within 5 points of the rules and trades about 65% of the portfolio a year.",
+  "Macro: PRSN averaged +4.4% a month when the 10-year yield fell and -0.5% when it rose. It's a rate-sensitive basket.",
+  "Diversification: average correlation between holdings is 0.13 over the past year."
+ ],
+ "cost_bps": 10
+}

@@ -1,0 +1,88 @@
+[
+ {
+  "date": "2026-10-09",
+  "rules": "2.0",
+  "trigger": "v2 launch",
+  "vix": 14.84000015258789,
+  "regime": "Risk-on",
+  "drift": 0.0109,
+  "adds": [
+   "BH",
+   "PGEN"
+  ],
+  "drops": [
+   "APP",
+   "LUNR",
+   "NVO"
+  ],
+  "targets": [
+   {
+    "ticker": "INTU",
+    "tier": "core",
+    "target": 0.2,
+    "from": 0.1484,
+    "conviction": 83.9
+   },
+   {
+    "ticker": "UBER",
+    "tier": "core",
+    "target": 0.2,
+    "from": 0.1368,
+    "conviction": 69.3
+   },
+   {
+    "ticker": "TDY",
+    "tier": "core",
+    "target": 0.2,
+    "from": 0.1356,
+    "conviction": 64.8
+   },
+   {
+    "ticker": "PLD",
+    "tier": "core",
+    "target": 0.2,
+    "from": 0.1242,
+    "conviction": 61.9
+   },
+   {
+    "ticker": "LTH",
+    "tier": "build",
+    "target": 0.08,
+    "from": 0.1357,
+    "conviction": 61.2
+   },
+   {
+    "ticker": "BH",
+    "tier": "build",
+    "target": 0.08,
+    "from": 0,
+    "conviction": 55.7
+   },
+   {
+    "ticker": "PGEN",
+    "tier": "wildcard",
+    "target": 0.03,
+    "from": 0,
+    "conviction": 46.9
+   }
+  ],
+  "exits": [
+   {
+    "ticker": "APP",
+    "rule": "Relative stop",
+    "detail": "Trails the S&P 500 by 40 pts over 3 months."
+   },
+   {
+    "ticker": "NVO",
+    "rule": "Relative stop",
+    "detail": "Trails the S&P 500 by 24 pts over 3 months."
+   },
+   {
+    "ticker": "LUNR",
+    "rule": "Quality cut",
+    "detail": "Quality 29, below the top half. Catalyst 55, rerate 55."
+   }
+  ],
+  "summary": "Switch to the v2 rules. In: Biglari Holdings, Precigen. Out: AppLovin, Intuitive Machines, Novo Nordisk. Trades on the first calm day (VIX under 30, no spike) in the next week, one close after the signal."
+ }
+]
