@@ -84,5 +84,18 @@
    }
   ],
   "summary": "Switch to the v2 rules. In: Biglari Holdings, Precigen. Out: AppLovin, Intuitive Machines, Novo Nordisk. Trades on the first calm day (VIX under 30, no spike) in the next week, one close after the signal."
+ },
+ {
+  "date": "2026-10-16",
+  "rules": "2.0",
+  "trigger": "no change",
+  "vix": 19.989999771118164,
+  "regime": "Risk-on",
+  "drift": 0.0136,
+  "adds": [],
+  "drops": [],
+  "targets": [],
+  "exits": [],
+  "summary": "No trades. Weights are within 1.4 pts of target and nothing failed a rule."
  }
 ]
