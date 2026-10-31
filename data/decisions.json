@@ -110,5 +110,20 @@
   "targets": [],
   "exits": [],
   "summary": "No trades. Weights are within 2.6 pts of target and nothing failed a rule."
+ },
+ {
+  "date": "2026-10-29",
+  "rules": "2.0",
+  "trigger": "no change",
+  "vix": 19.420000076293945,
+  "regime": "Risk-on",
+  "drift": 0.0203,
+  "adds": [
+   "NVO"
+  ],
+  "drops": [],
+  "targets": [],
+  "exits": [],
+  "summary": "No trades. Weights are within 2.0 pts of target and nothing failed a rule."
  }
 ]
