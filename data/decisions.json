@@ -125,5 +125,68 @@
   "targets": [],
   "exits": [],
   "summary": "No trades. Weights are within 2.0 pts of target and nothing failed a rule."
+ },
+ {
+  "date": "2026-11-05",
+  "rules": "2.0",
+  "trigger": "event exit",
+  "vix": 25.639999389648438,
+  "regime": "Mixed",
+  "drift": 0.034,
+  "adds": [],
+  "drops": [
+   "BH",
+   "PGEN"
+  ],
+  "targets": [
+   {
+    "ticker": "INTU",
+    "tier": "core",
+    "target": 0.2843,
+    "from": 0.234,
+    "conviction": 74.7
+   },
+   {
+    "ticker": "UBER",
+    "tier": "core",
+    "target": 0.2716,
+    "from": 0.1917,
+    "conviction": 65.5
+   },
+   {
+    "ticker": "TDY",
+    "tier": "core",
+    "target": 0.2633,
+    "from": 0.1925,
+    "conviction": 59.5
+   },
+   {
+    "ticker": "PLD",
+    "tier": "build",
+    "target": 0.0918,
+    "from": 0.1914,
+    "conviction": 55.3
+   },
+   {
+    "ticker": "LTH",
+    "tier": "build",
+    "target": 0.089,
+    "from": 0.0957,
+    "conviction": 49.2
+   }
+  ],
+  "exits": [
+   {
+    "ticker": "PGEN",
+    "rule": "Relative stop",
+    "detail": "Trails the S&P 500 by 39 pts over 3 months."
+   },
+   {
+    "ticker": "BH",
+    "rule": "Quality cut",
+    "detail": "Quality 50, below the top half. Catalyst 45, rerate 54."
+   }
+  ],
+  "summary": "A holding broke a rule. Out: Biglari Holdings, Precigen. Trades on the first calm day (VIX under 30, no spike) in the next week, one close after the signal."
  }
 ]
