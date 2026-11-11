@@ -538,7 +538,7 @@ function Research({ D }) {
       <div aria-hidden="true" className="absolute top-0 left-0 right-0 flex h-[3px]"><span className="flex-1" style=${{ background: C.prsn }}></span><span className="flex-1 bg-white"></span><span className="flex-1" style=${{ background: C.spx }}></span></div>
       <${Head} title="How Companies Are Chosen" icon="flask" aside=${`Rules v${R.version} · checked every week`} />
       <p className="-mt-1 mb-5 max-w-[70ch] text-[14px] leading-relaxed text-silver">Heritage decides who can be considered. After that, only the numbers decide who gets in and how much each one gets. Nobody picks stocks by hand, me included.</p>
-      <div className="-mx-5 px-5 sm:mx-0 sm:px-0 flex lg:grid lg:grid-cols-3 gap-3 sm:gap-4 overflow-x-auto lg:overflow-visible snap-x snap-mandatory scroll-px-5 overscroll-x-contain pb-1">
+      <div tabIndex=${0} role="region" aria-label="Selection method cards; scroll horizontally" className="-mx-5 px-5 sm:mx-0 sm:px-0 flex lg:grid lg:grid-cols-3 gap-3 sm:gap-4 overflow-x-auto lg:overflow-visible snap-x snap-mandatory scroll-px-5 overscroll-x-contain pb-1">
         <${Step} n=${1} t="Select" icon="search">
           <${P}>Every US-listed company led by a Persian or Iranian CEO, co-CEO or executive chair, documented by a public source. Each one must clear every gate.<//>
           <${Gates} rows=${[["Size", `market cap > $${Math.round(G.min_mcap_b * 1000)}M`], ["Liquidity", `> $${G.min_adv_musd}M a day ($${G.min_adv_small_musd}M small caps)`], ["Listing", `${G.exchanges.join(", ")}, price ≥ $${G.min_price}`],
