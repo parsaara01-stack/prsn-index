@@ -5,8 +5,8 @@ const { useState, useEffect, useMemo, useRef } = React;
 const { ResponsiveContainer, ComposedChart, Area, Line, BarChart, Bar, XAxis, YAxis, Tooltip, LabelList, ReferenceLine } = Recharts;
 const html = htm.bind(React.createElement);
 const DATA_URL = window.PRSN_DATA_URL || "data/index.json";
-const EMBED = !!window.PRSN_EMBED || window.self !== window.top;   // inside an iframe (Adobe Portfolio): no sticky header, report height
-const FULL_URL = window.PRSN_FULL_URL || location.href.split("#")[0];   // "Open" link when embedded
+const EMBED = !!window.PRSN_EMBED || new URLSearchParams(location.search).get("embed") === "1" || window.self !== window.top;   // inside an iframe (Adobe Portfolio): no sticky header, report height
+const FULL_URL = window.PRSN_FULL_URL || location.origin + location.pathname;   // "Open" link when embedded
 const SHARE_URL = window.PRSN_SHARE_URL || FULL_URL;   // set window.PRSN_SHARE_URL in index.html to share parsaara.com/index instead
 const ASSET = window.PRSN_ASSET_BASE || "";
 const REPO = "https://github.com/parsaara01-stack/prsn-index";
@@ -110,7 +110,7 @@ const Pill = ({ active, onClick, children, href, primary, label }) => {
     ? html`<a href=${href} aria-current=${active ? "true" : undefined} target=${href.startsWith("http") || (EMBED && !href.startsWith("#")) ? "_blank" : undefined} rel="noopener" className=${cls}>${children}</a>`
     : html`<button type="button" onClick=${onClick} aria-label=${label} aria-pressed=${active == null ? undefined : !!active} className=${cls}>${children}</button>`;
 };
-const Label = ({ children, icon }) => html`<div className="flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-dim">${icon && html`<${Icon} n=${icon} size=${13} className="text-emerald" />`}${children}</div>`;
+const Label = ({ children, icon }) => html`<div className="flex items-center gap-1.5 text-[11px] font-semibold text-dim">${icon && html`<${Icon} n=${icon} size=${13} className="text-emerald" />`}${children}</div>`;
 const Chip = ({ children, kind = "" }) => {
   const k = { good: "bg-emerald/10 text-emerald", bad: "bg-coral/10 text-coral", accent: "bg-accent/[0.07] text-accent", "": "bg-fg/[0.05] text-silver" }[kind];
   return html`<span className=${"inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-semibold whitespace-nowrap " + k}>${children}</span>`;
@@ -248,10 +248,13 @@ const PrsnSwatch = () => html`<span className="inline-block w-4 h-[3px] rounded 
 function Hero({ D, range, setRange, showBench, setShowBench }) {
   const S = D.stats;
   const data = useMemo(() => {
-    const s = range ? D.series.slice(-range - 1) : D.series;
+    const since = range === "live" ? D.index.launch_date : range === "v2" ? D.index.v2_date : null;
+    const s = since ? D.series.filter(r => r[0] >= since) : range ? D.series.slice(-range - 1) : D.series;
+    if (!s.length) return [];
     const a0 = s[0][1], b0 = s[0][2];
     return s.map(r => ({ d: r[0], lvl: r[1], a: r[1] / a0 * 100, b: r[2] / b0 * 100 }));
   }, [D, range]);
+  if (!data.length) return html`<${Card} className="col-span-12 lg:col-span-8"><p>No observations are available for this period.</p><${Pill} onClick=${() => setRange(0)}>Show full history<//><//>`;
   const end = data[data.length - 1];
   const vals = data.flatMap(p => showBench ? [p.a, p.b] : [p.a]);
   const lo = Math.min(...vals), hi = Math.max(...vals);
@@ -260,11 +263,11 @@ function Hero({ D, range, setRange, showBench, setShowBench }) {
     <${Card} className="col-span-12 lg:col-span-8 flex flex-col" id="overview">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="inline-flex items-center gap-2 text-[12.5px] font-semibold text-silver"><${FlagBar} />PRSN Index</div>
-        <div className="flex gap-1.5" role="group" aria-label="Chart range">
-          ${[["1Y", 252], ["3Y", 756], ["All", 0]].map(([l, n]) => html`<${Pill} key=${l} active=${range === n} onClick=${() => setRange(n)}>${l}<//>`)}
+        <div className="flex flex-wrap gap-1.5" role="group" aria-label="Chart range">
+          ${[["Since launch", "live"], ["Rules v2", "v2"], ["1Y", 252], ["Full history", 0]].map(([l, n]) => html`<${Pill} key=${l} active=${range === n} onClick=${() => setRange(n)}>${l}<//>`)}
         </div>
       </div>
-      <h1 className=${"mt-5 font-black tracking-[-0.035em] leading-[1.0] text-fg max-w-[15ch] " + (EMBED ? "text-[34px] sm:text-[50px]" : "text-[34px] sm:text-[56px] xl:text-[64px]")}><span className="text-emerald">World's First</span> Persian Led <span className="text-coral">Equity Index</span></h1>
+      <h1 className=${"mt-5 font-black tracking-[-0.035em] leading-[1.0] text-fg max-w-[15ch] " + (EMBED ? "text-[34px] sm:text-[50px]" : "text-[32px] sm:text-[44px] xl:text-[50px]")}>Persian-led <span className="text-emerald">equity research</span></h1>
       <div className="mt-5 flex flex-wrap items-end gap-x-5 gap-y-2">
         <div className="num text-[42px] sm:text-[52px] font-semibold leading-none tracking-tight text-fg">${D.level.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
         <div className="flex items-center gap-2 pb-1.5">
@@ -276,7 +279,7 @@ function Hero({ D, range, setRange, showBench, setShowBench }) {
         <${ResponsiveContainer} width="100%" height="100%">
           <${ComposedChart} data=${data} margin=${{ top: 16, right: 0, bottom: 0, left: 0 }}>
             <defs><linearGradient id="fillPrsn" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor=${C.prsn} stopOpacity="0.16" /><stop offset="100%" stopColor=${C.prsn} stopOpacity="0" /></linearGradient></defs>
-            <${XAxis} dataKey="d" hide />
+            <${XAxis} dataKey="d" tickFormatter=${d => date(d, { month: "short", day: "numeric" })} minTickGap=${48} tick=${{fontSize: 10, fill: C.dim}} axisLine=${false} tickLine=${false} />
             <${YAxis} hide domain=${[lo - (hi - lo) * 0.06, hi + (hi - lo) * 0.06]} />
             <${ReferenceLine} y=${100} stroke="rgba(23,36,58,0.10)" strokeDasharray="2 6" />
             ${launchIn && html`<${ReferenceLine} x=${D.index.launch_date} stroke=${C.navy} strokeOpacity=${0.3} label=${{ value: "Launch", position: "insideTopRight", fill: C.dim, fontSize: 11 }} />`}
@@ -291,11 +294,13 @@ function Hero({ D, range, setRange, showBench, setShowBench }) {
           <span className="flex items-center gap-1.5"><${PrsnSwatch} /><span className="text-dim">PRSN</span><span className="num font-semibold text-fg">${pct(end.a / 100 - 1)}</span></span>
           <span className="flex items-center gap-1.5"><${SpxSwatch} /><span className="text-dim">S&P 500</span><span className="num font-semibold text-fg">${pct(end.b / 100 - 1)}</span></span>
           <span className="text-dim">since ${date(data[0].d, { month: "short", year: "numeric" })}</span>
-          <${BacktestNote} D=${D} />
+          ${data[0].d < D.index.launch_date && html`<${BacktestNote} D=${D} />`}
         </div>
         <${Pill} active=${showBench} onClick=${() => setShowBench(!showBench)}>vs S&P 500<//>
       </div>
-      <div className="mt-5 pt-4 border-t border-line grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <p className="mt-3 text-[12px] leading-relaxed text-silver">Chart rebased to 100 on ${date(data[0].d)}. Benchmark: SPY adjusted close, an S&P 500 total-return proxy. ${range === "live" || range === "v2" ? "This post-launch record is short and does not establish persistent outperformance." : "Includes a retrospective backtest with hindsight and survivorship bias."}</p>
+      <p className="mt-4 text-[12px] text-dim">Risk statistics below cover the full record, including the backtest.</p>
+      <div className="mt-2 pt-4 border-t border-line grid grid-cols-2 sm:grid-cols-4 gap-4">
         <${KV} icon="wave" k=${"Swings · S&P " + pctU(S.vol_bench)} v=${pctU(S.vol)} tip=${html`<${InfoTip} label="volatility">${TIPS.vol}<//>`} />
         <${KV} icon="drop" k=${"Worst drop · S&P " + pctU(S.max_dd_bench.depth)} v=${pctU(S.max_dd.depth)} cls="!text-coral" />
         <${KV} icon="pulse" k="Moves vs market" v=${dec(S.beta)} tip=${html`<${InfoTip} label="beta">${TIPS.beta}<//>`} />
@@ -311,17 +316,17 @@ function Side({ D }) {
   return html`
     <div className="col-span-12 lg:col-span-4 grid grid-cols-2 lg:grid-cols-1 gap-3 sm:gap-4 content-start">
       <${Card} className="col-span-2 lg:col-span-1 !p-4 sm:!p-6">
-        <${Label} icon="dollar">$10,000 Invested ${date(D.index.base_date, { month: "short", year: "numeric" })}<//>
+        <${Label} icon="dollar">$10,000 modeled from ${date(D.index.base_date, { month: "short", year: "numeric" })}<//>
         <div className=${big_ + "text-emerald"}>${money(G.prsn, 0)}</div>
         ${vs(money(G.bench, 0))}
       <//>
       <${Card} className="!p-4 sm:!p-6">
-        <${Label} icon="trend">Per Year<//>
+        <${Label} icon="trend">Full-history annualized return<//>
         <div className=${big_ + "text-emerald"}>${pct(S.ann_return)}</div>
         ${vs(pct(S.ann_return_bench))}
       <//>
       <${Card} className="!p-4 sm:!p-6">
-        <div className="flex items-center"><${Label} icon="shield">Sharpe Ratio<//><${InfoTip} label="the Sharpe ratio">${TIPS.sharpe}<//></div>
+        <div className="flex items-center"><${Label} icon="shield">Full-history Sharpe ratio<//><${InfoTip} label="the Sharpe ratio">${TIPS.sharpe}<//></div>
         <div className=${big_ + "text-fg"}>${dec(S.sharpe)}</div>
         ${vs(dec(S.sharpe_bench))}
       <//>
@@ -331,7 +336,7 @@ function Side({ D }) {
           <span className="flex items-center gap-2"><${PrsnSwatch} />Green Is PRSN</span>
           <span className="flex items-center gap-2"><${SpxSwatch} />Dashed Red Is The S&P 500</span>
         </div>
-        <p className="mt-2.5 mb-0 text-[13px] leading-relaxed text-silver">Both start at $10,000 on ${date(D.index.base_date)}. Before ${date(D.index.launch_date)} it's a backtest. Tap a leader below to see why they're in.</p>
+        <p className="mt-2.5 mb-0 text-[13px] leading-relaxed text-silver">These summary figures use the full history from ${date(D.index.base_date)}, including the backtest before ${date(D.index.launch_date)}. They do not change with the chart range. Current rules began on ${date(D.index.v2_date)}; there is no v2 backtest.</p>
       <//>
     </div>`;
 }
@@ -569,6 +574,17 @@ const arc = (cx, cy, r0, r1, a0, a1) => {
 };
 const FLAG_RAMP = ["#178A3E", "#3A9C59", "#64B07C", "#9DCDAA", "#ECB8B3", "#DD857D", "#D2594F", "#C8322B"];
 const rampColor = (i, n) => FLAG_RAMP[n <= 1 ? 0 : Math.round(i * (FLAG_RAMP.length - 1) / (n - 1))];
+function MethodNotes({ D }) {
+  return html`<section className="col-span-12 surface rounded-2xl p-5 sm:p-6" id="implementation" aria-label="Data and implementation">
+    <h2 className="text-xl font-bold">What this record measures</h2>
+    <div className="grid md:grid-cols-3 gap-6 mt-4 text-[13px] leading-relaxed text-silver">
+      <div><h3 className="font-semibold text-fg mb-2">Dates and membership</h3><p>Launch: ${date(D.index.launch_date)}. Rules v2: ${date(D.index.v2_date)}. Earlier results are retrospective. The current directory is not a point-in-time historical membership archive. Heritage must have a public source; it is not inferred from names.</p></div>
+      <div><h3 className="font-semibold text-fg mb-2">Returns and costs</h3><p>The daily engine chains Yahoo adjusted-close returns, including vendor dividend and split adjustments. SPY is the benchmark proxy. Cash accrues a daily approximation from the 13-week Treasury yield. Rebalances deduct 10 basis points times one-way turnover. Taxes and actual brokerage execution are not modeled.</p></div>
+      <div><h3 className="font-semibold text-fg mb-2">Implementation limits</h3><p>A missing holding price currently contributes a zero daily return. Missing or short VIX history does not block a trade; the window deadline can also trigger a signal. Execution follows at the next close. These fallbacks can affect results. Other corporate actions depend on vendor data and manual event exclusions.</p></div>
+    </div><p className="mt-4 text-[12px] text-silver">Weight caps apply when targets are set; market moves can take current weights above those caps. Latest close: ${date(D.asof)}. <a className="underline" href=${REPO + "/blob/main/engine/series.py"} target="_blank" rel="noopener">Return calculation</a> and <a className="underline" href=${REPO + "/blob/main/engine/config/rules.yaml"} target="_blank" rel="noopener">rulebook</a>.</p>
+  </section>`;
+}
+
 function SliceLogo({ t, x, y, size }) {
   const url = useLogo(t);
   const id = "clip-" + t.replace(/[^A-Za-z0-9]/g, "");
@@ -675,7 +691,7 @@ function Honorable({ D }) {
               </div>
               <${RoundsChart} vals=${p.valuations} />
               <div className="grid gap-2">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.12em] text-dim">Growth Since ${date(p.since, { month: "short", year: "numeric" })}</div>
+                <div className="text-[11px] font-semibold text-dim">Growth Since ${date(p.since, { month: "short", year: "numeric" })}</div>
                 ${bars.map(([k, v, c]) => html`
                   <div key=${k} className="grid grid-cols-[132px_1fr_52px] sm:grid-cols-[170px_1fr_56px] items-center gap-3 text-[12.5px]">
                     <span className="text-silver truncate">${k}</span>
@@ -843,6 +859,7 @@ function Account({ D }) {
   const A = D.account;
   if (!A || !A.series || A.series.length < 2) return null;
   const data = A.series.map(r => ({ d: r[0], a: r[1], p: r[2] }));
+  if (!data.length) return html`<${Card} className="col-span-12 lg:col-span-8"><p>No observations are available for this period.</p><${Pill} onClick=${() => setRange(0)}>Show full history<//><//>`;
   const end = data[data.length - 1];
   return html`
     <${Card} className="col-span-12" id="account">
@@ -876,9 +893,9 @@ function Why({ D }) {
   return html`
     <section className="col-span-12 surface rounded-2xl relative overflow-hidden px-5 py-5 sm:px-7 sm:py-6" id="why" aria-labelledby="why-title">
       <div aria-hidden="true" className="absolute left-0 top-0 bottom-0 w-[4px] flex flex-col"><span className="flex-1" style=${{ background: C.prsn }}></span><span className="flex-1 bg-white"></span><span className="flex-1" style=${{ background: C.spx }}></span></div>
-      <h2 id="why-title" className="m-0 text-[20px] sm:text-[24px] font-extrabold tracking-tight leading-tight text-fg">Fund Objective</h2>
+      <h2 id="why-title" className="m-0 text-[20px] sm:text-[24px] font-extrabold tracking-tight leading-tight text-fg">The research question</h2>
       <p className="mt-2 mb-0 max-w-[70ch] text-[15px] sm:text-[16px] leading-relaxed text-silver">Persian and Iranian founders and CEOs lead some of the world's biggest companies, including ${top.slice(0, -1).join(", ")} and ${top[top.length - 1]}. PRSN puts them in one place, and tests whether clear rules for picking and weighting can turn their companies into a worthwhile portfolio. <span className="font-semibold text-fg">For a free Iran.</span></p>
-      <p className="mt-2.5 mb-0 text-[12px] text-dim leading-snug">A research project, not a fund, and not investment advice. I invest personally in these companies. <button type="button" onClick=${() => goTo("evidence")} className="text-accent font-semibold underline underline-offset-2">See the evidence ↓</button></p>
+      <p className="mt-2.5 mb-0 text-[12px] text-dim leading-snug">A research project, not a fund, and not investment advice. I invest personally in these companies. <button type="button" onClick=${() => goTo("evidence")} className="text-accent font-semibold underline underline-offset-2">Read the evidence</button></p>
     </section>`;
 }
 
@@ -927,7 +944,7 @@ const RULES_WHY = [
   ["Cut what isn't working", "A name that trails the market by 20 points in 3 months leaves until the next monthly reset.", ["jt93"]],
   ["Check weekly, reset monthly, trade on calm days", "Keeps the design on target while trading less, and avoids paying wide spreads in a panic.", ["dy03"]],
   ["Judged per unit of risk", "The Sharpe ratio: return above cash, divided by volatility.", ["sharpe66", "sharpe94"]],
-  ["Backtests flatter the past", "Applying today's winners to old prices adds hindsight. Only the live record is clean, so v2 has no backtest: its record starts the day it went live.", ["bgir92", "bblz14"]],
+  ["Backtests flatter the past", "Applying today's winners to old prices adds hindsight. The post-launch record avoids this particular retrospective selection step, but remains short and subject to data and implementation limitations. Rules v2 have no backtest.", ["bgir92", "bblz14"]],
 ];
 const PLAIN = { "PRSN method": "PRSN, our method", "Same, no momentum": "PRSN without momentum", "√cap × score": "Size × score", "Equal weight": "Equal weight", "Market-cap weight": "By company size", "√ market cap": "By size, softened", "Inverse volatility": "Calmer stocks weigh more",
   "Monthly + 5-pt drift": "PRSN: monthly + drift", "Monthly": "Monthly", "Quarterly": "Quarterly", "Annual": "Once a year", "Buy and hold": "Never reset" };
@@ -1090,7 +1107,7 @@ function useActiveSection(ids) {
 function App() {
   const [D, setD] = useState(null);
   const [err, setErr] = useState(false);
-  const [range, setRange] = useState(0);
+  const [range, setRange] = useState("live");
   const [bench, setBench] = useState(true);
   useEffect(() => {
     fetch(DATA_URL, { cache: "no-store" }).then(r => { if (!r.ok) throw 0; return r.json(); }).then(setD).catch(() => setErr(true));
@@ -1098,7 +1115,7 @@ function App() {
   useEffect(() => { if (D && /^#(evidence|paper|methodology)$/.test(location.hash)) setTimeout(() => goTo("evidence"), 300); }, [D]);
   const [shared, setShared] = useState("");
   const share = async () => {
-    const data = { title: "PRSN · World's First Persian Led Equity Index", text: "The world's first Persian led equity index", url: SHARE_URL };
+    const data = { title: "PRSN Index", text: "Persian-led equity research, with published rules and a dated performance record", url: SHARE_URL };
     try { if (navigator.share) { await navigator.share(data); return; } } catch (e) { if (e && e.name === "AbortError") return; }
     try { await navigator.clipboard.writeText(SHARE_URL); setShared("Link copied"); } catch (e) { setShared(SHARE_URL); }
     setTimeout(() => setShared(""), 2400);
@@ -1116,7 +1133,7 @@ function App() {
   }, []);
   const S = useSelection(D);
   const active = useActiveSection(["leaders", "research", "breakdown", "detail", "decisions", "directory", "evidence"]);
-  if (err) return html`<div className="p-10 text-dim">Data didn't load. Run <span className="num">python -m engine daily</span>, then reload.</div>`;
+  if (err) return html`<div className="p-10 text-dim">The research data could not load. <button type="button" className="underline" onClick=${() => location.reload()}>Try again</button> or <a className="underline" href=${REPO}>view the source repository</a>.</div>`;
   if (!D) return html`<div className="p-10 text-dim">Loading PRSN…</div>`;
   const nav = [["leaders", "Leaders", "users"], ["research", "Research", "flask"], ["breakdown", "Holdings", "pie"], ["decisions", "Decisions", "calendar"], ["directory", "Directory", "building"]];
   return html`
@@ -1128,7 +1145,7 @@ function App() {
           <button type="button" onClick=${() => goTo("why")} className="shrink-0" aria-label="PRSN, back to top"><${Logo} h=${30} /></button>
           <nav aria-label="Sections" className="flex items-center gap-1.5">
             ${nav.map(([id, l, ic]) => html`<span key=${id} className="hidden lg:inline-flex"><${Pill} onClick=${() => goTo(id)} active=${active === id || (id === "breakdown" && active === "detail")}><${Icon} n=${ic} size=${14} />${l}<//></span>`)}
-            ${EMBED && html`<span className="hidden sm:inline-flex"><${Pill} href=${FULL_URL}>Open ↗<//></span>`}
+            ${EMBED && html`<span className="inline-flex"><${Pill} href=${FULL_URL}>Open full screen<//></span>`}
             <span className="hidden lg:inline-flex"><${Pill} onClick=${() => goTo("evidence")} active=${active === "evidence"}><${Icon} n="scale" size=${14} />Evidence<//></span>
             <${Pill} primary onClick=${share} label="Share this page"><${Icon} n="share" size=${14} />${shared ? (shared === "Link copied" ? "Copied" : "Share") : "Share"}<//>
           </nav>
@@ -1142,6 +1159,7 @@ function App() {
         <${Side} D=${D} />
         <${Leaders} D=${D} selTicker=${D.holdings[S.sel].ticker} pick=${i => S.select(i, true, true)} />
         <${Research} D=${D} />
+        <${MethodNotes} D=${D} />
         <${Breakdown} D=${D} selTicker=${D.holdings[S.sel].ticker} pick=${i => S.select(i, true)} />
         <${Detail} D=${D} h=${D.holdings[S.sel]} back=${S.back} />
         <${Years} D=${D} />
