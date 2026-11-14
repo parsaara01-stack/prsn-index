@@ -188,5 +188,23 @@
    }
   ],
   "summary": "A holding broke a rule. Out: Biglari Holdings, Precigen. Trades on the first calm day (VIX under 30, no spike) in the next week, one close after the signal."
+ },
+ {
+  "date": "2026-11-12",
+  "rules": "2.0",
+  "trigger": "no change",
+  "vix": 19.299999237060547,
+  "regime": "Mixed",
+  "drift": 0.0029,
+  "adds": [
+   "APP",
+   "BH",
+   "GH",
+   "NVO"
+  ],
+  "drops": [],
+  "targets": [],
+  "exits": [],
+  "summary": "No trades. Weights are within 0.3 pts of target and nothing failed a rule."
  }
 ]
