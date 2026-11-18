@@ -153,6 +153,18 @@ const GlassTip = ({ active, payload, fmt }) => {
 const SpxSwatch = () => html`<span className="inline-block w-4 border-t-2 border-dashed shrink-0" style=${{ borderColor: C.spx }}></span>`;
 const PrsnSwatch = () => html`<span className="inline-block w-4 h-[3px] shrink-0" style=${{ background: C.prsn }}></span>`;
 
+// ---------- why PRSN: the objective, before anything else
+function Why({ D }) {
+  const top = [...D.holdings].sort((a, b) => (b.metrics.mcap_b || 0) - (a.metrics.mcap_b || 0)).slice(0, 3).map(h => cleanName(h.name).replace(/ (Technologies|Group|Inc\.?)$/, ""));
+  return html`
+    <section className="col-span-12 surface relative overflow-hidden px-5 py-4 sm:px-6 sm:py-5" id="why" aria-labelledby="why-title">
+      <div aria-hidden="true" className="absolute left-0 top-0 bottom-0 w-[4px] flex flex-col"><span className="flex-1" style=${{ background: C.prsn }}></span><span className="flex-1 bg-white"></span><span className="flex-1" style=${{ background: C.spx }}></span></div>
+      <h2 id="why-title" className="m-0 serif text-[20px] sm:text-[23px] font-semibold tracking-tight leading-tight text-fg">The research question</h2>
+      <p className="mt-1.5 mb-0 max-w-[76ch] text-[14.5px] sm:text-[15.5px] leading-relaxed text-silver">Persian and Iranian founders and CEOs lead some of the world's biggest companies, including ${top.slice(0, -1).join(", ")} and ${top[top.length - 1]}. PRSN puts them in one place, and tests whether clear rules for picking and weighting can turn their companies into a worthwhile portfolio. <span className="font-semibold text-fg">For a free Iran.</span></p>
+      <p className="mt-2 mb-0 text-[12px] text-dim leading-snug">A research project, not a fund, and not investment advice. I invest personally in these companies. <button type="button" onClick=${() => goTo("evidence")} className="text-accent font-semibold underline underline-offset-2">Read the evidence</button></p>
+    </section>`;
+}
+
 // ---------- Hero & Side KPIs
 function Hero({ D, range, setRange, showBench, setShowBench }) {
   const S = D.stats;
@@ -761,12 +773,15 @@ function Directory({ D, pick }) {
           const hm = r.ticker ? heldMap[r.ticker] : null;
           const bm = r.ticker ? benchMap[r.ticker] : null;
           return html`
-          <div key=${r.name + r.company} className="bg-white p-4 flex flex-col gap-2 min-w-0">
+          <div key=${r.name + r.company} className="bg-white p-4 flex flex-col gap-2.5 min-w-0">
             <div className="flex items-center gap-3 min-w-0">
-              ${r.ticker ? html`<${CoLogo} t=${r.ticker} size=${34} />` : html`<span className="w-8 h-8 rounded-full grid place-items-center bg-accent/[0.07] ring-1 ring-line text-[11.5px] font-bold text-accent shrink-0" aria-hidden="true">${initialsOf(r.company)}</span>`}
+              <div className="relative shrink-0">
+                <${Avatar} h=${{ ceo: r.name, leader: { photo: r.photo } }} size=${46} lazy=${true} />
+                ${r.ticker && html`<span className="absolute -bottom-1 -right-1"><${CoLogo} t=${r.ticker} size=${18} /></span>`}
+              </div>
               <div className="min-w-0 flex-1">
                 <div className="text-[14.5px] font-bold text-fg leading-tight truncate">${r.name}</div>
-                <div className="text-[12px] text-dim leading-tight truncate">${r.title}, <a href=${r.website} target="_blank" rel="noopener" className="hover:text-fg underline-offset-2 hover:underline">${r.company}</a>${r.ticker ? html` (<span className="num font-semibold text-fg">${r.ticker}</span>)` : ""}</div>
+                <div className="text-[12px] text-dim leading-tight truncate mt-0.5">${r.title}, <a href=${r.website} target="_blank" rel="noopener" className="hover:text-fg underline-offset-2 hover:underline">${r.company}</a>${r.ticker ? html` (<span className="num font-semibold text-fg">${r.ticker}</span>)` : ""}</div>
               </div>
               ${hm ? html`<button type="button" onClick=${() => pick(hm.i)}><${Chip} kind="good">In PRSN · ${pctU(hm.h.weight)}<//></button>`
                 : bm ? html`<${Chip}>${bm.rule}<//>`
@@ -1020,7 +1035,7 @@ function App() {
         <div aria-hidden="true" className="flex h-[3px]"><span className="flex-1" style=${{ background: C.prsn }}></span><span className="flex-1 bg-white"></span><span className="flex-1" style=${{ background: C.spx }}></span></div>
         <div className="max-w-[1280px] mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <button type="button" onClick=${() => goTo("overview")} className="shrink-0" aria-label="PRSN, back to top"><${Logo} h=${28} /></button>
+            <button type="button" onClick=${() => goTo("why")} className="shrink-0" aria-label="PRSN, back to top"><${Logo} h=${28} /></button>
             <span className="hidden sm:inline text-[12px] text-dim border-l border-line pl-3">Rules v${D.rules.version} · ${D.holdings.length} Active Holdings · ${D.directory.length} Verified Leaders</span>
           </div>
           <nav aria-label="Sections" className="flex items-center gap-1.5">
@@ -1033,6 +1048,7 @@ function App() {
       <div className="sr-only" aria-live="polite">${S.announce}${shared ? " " + shared : ""}</div>
 
       <main className="relative max-w-[1280px] mx-auto px-4 sm:px-6 py-5 sm:py-7 grid grid-cols-12 gap-3 sm:gap-4">
+        <${Why} D=${D} />
         <${Hero} D=${D} range=${range} setRange=${setRange} showBench=${bench} setShowBench=${setBench} />
         <${Side} D=${D} />
         <${Leaders} D=${D} selTicker=${curHolding.ticker} pick=${i => S.select(i, true, true)} />

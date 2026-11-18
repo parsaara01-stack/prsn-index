@@ -112,7 +112,8 @@
   "thesis": "Co-founded and led by Tehran-born John Farahi, Monarch Casino & Resort operates luxury destination resorts in Reno and Black Hawk. With 27% operating margins, minimal net leverage, and consistent capital returns, Monarch is one of the highest-quality balance sheets in hospitality.",
   "leader": {
    "line": "Born in Tehran. Built Atlantis Reno and Monarch Black Hawk.",
-   "story": "John Farahi was born in Tehran and immigrated to the United States, where he and his brothers Bob and Ben acquired a small Reno motel in 1972 and built it into Monarch Casino & Resort, taking the company public on Nasdaq in 1993."
+   "story": "John Farahi was born in Tehran and immigrated to the United States, where he and his brothers Bob and Ben acquired a small Reno motel in 1972 and built it into Monarch Casino & Resort, taking the company public on Nasdaq in 1993.",
+   "photo": "leaders/mcri.jpg"
   },
   "ir": "https://www.monarchcasino.com/investors"
  },
@@ -124,7 +125,8 @@
   "thesis": "Led by Tehran-born CEO Hessam Nadji, Marcus & Millichap is North America's leading middle-market commercial real estate investment brokerage. The firm maintains a fortress net-cash balance sheet that positions it for strong operating leverage as transaction volumes recover.",
   "leader": {
    "line": "Born in Tehran. Joined as a research analyst; became CEO in 2016.",
-   "story": "Hessam Nadji was born in Tehran and immigrated to the United States as a teenager. He joined Marcus & Millichap in 1996 as Vice President of Research, architected the firm's national specialty brokerage expansion, and was appointed President and CEO in 2016."
+   "story": "Hessam Nadji was born in Tehran and immigrated to the United States as a teenager. He joined Marcus & Millichap in 1996 as Vice President of Research, architected the firm's national specialty brokerage expansion, and was appointed President and CEO in 2016.",
+   "photo": "leaders/mmi.jpg"
   },
   "ir": "https://ir.marcusmillichap.com"
  },
@@ -136,7 +138,8 @@
   "thesis": "Co-founded by Iranian-Armenian immigrant Ara Mahdessian, ServiceTitan is the operating system for the trades. Generating 21% revenue growth and expanding positive free-cash-flow margins, ServiceTitan compounds high-retention vertical SaaS and fintech volume.",
   "leader": {
    "line": "Immigrated from Iran as a child. Built ServiceTitan for tradespeople like his father.",
-   "story": "Ara Mahdessian immigrated to California from Iran as a young boy and watched his father work as a residential contractor. After studying at Stanford, he co-founded ServiceTitan in 2012 to build enterprise software for trades businesses and took it public on Nasdaq in 2024."
+   "story": "Ara Mahdessian immigrated to California from Iran as a young boy and watched his father work as a residential contractor. After studying at Stanford, he co-founded ServiceTitan in 2012 to build enterprise software for trades businesses and took it public on Nasdaq in 2024.",
+   "photo": "leaders/ttan.jpg"
   },
   "ir": "https://investors.servicetitan.com"
  },
@@ -148,7 +151,8 @@
   "thesis": "Co-founded and led by Sharif University and Stanford alumnus AmirAli Talasaz, Guardant Health is the category leader in liquid biopsy and blood-based colorectal cancer screening (Shield), scaling revenue at 36% year over year.",
   "leader": {
    "line": "Studied in Tehran and Stanford. Pioneered liquid biopsy cancer screening.",
-   "story": "AmirAli Talasaz studied electrical engineering at Sharif University of Technology in Tehran before completing his PhD at Stanford, where he invented non-invasive blood-testing technologies and co-founded Guardant Health in 2012."
+   "story": "AmirAli Talasaz studied electrical engineering at Sharif University of Technology in Tehran before completing his PhD at Stanford, where he invented non-invasive blood-testing technologies and co-founded Guardant Health in 2012.",
+   "photo": "leaders/gh.jpg"
   },
   "ir": "https://investors.guardanthealth.com"
  },
@@ -160,7 +164,8 @@
   "thesis": "Founded by Iranian-American physician-scientist Bobak Azamian, Tarsus commercialized XDEMVY, the first FDA-approved treatment for Demodex blepharitis, driving 64%+ revenue growth and rapid operating leverage.",
   "leader": {
    "line": "Iranian-American Rhodes Scholar. Founded Tarsus to create a new category in eye care.",
-   "story": "Dr. Bobak Azamian is a second-generation Iranian-American who earned his bachelor's at Rice, a DPhil at Oxford as a Rhodes Scholar, and his MD at Harvard/MIT before founding Tarsus Pharmaceuticals in 2016."
+   "story": "Dr. Bobak Azamian is a second-generation Iranian-American who earned his bachelor's at Rice, a DPhil at Oxford as a Rhodes Scholar, and his MD at Harvard/MIT before founding Tarsus Pharmaceuticals in 2016.",
+   "photo": "leaders/tars.jpg"
   },
   "ir": "https://ir.tarsusrx.com"
  },
@@ -172,7 +177,8 @@
   "thesis": "Founded by Golnar Khosrowshahi in 2007, Reservoir Media owns and manages over 150,000 music copyrights generating recurring royalty cash flows with 21.5% operating margins.",
   "leader": {
    "line": "Founded Reservoir in 2007. First female Iranian-Canadian music publishing CEO.",
-   "story": "Golnar Khosrowshahi's family left Iran following the 1979 revolution. Educated at Bryn Mawr and Columbia University, she founded Reservoir Media in 2007 and built it into the first female-founded, publicly traded independent music company in the US."
+   "story": "Golnar Khosrowshahi's family left Iran following the 1979 revolution. Educated at Bryn Mawr and Columbia University, she founded Reservoir Media in 2007 and built it into the first female-founded, publicly traded independent music company in the US.",
+   "photo": "leaders/rsvr.jpg"
   },
   "ir": "https://investors.reservoir-media.com"
  },
@@ -184,7 +190,8 @@
   "thesis": "Led by Tehran-born Sardar Biglari, Biglari Holdings operates a permanent-capital holding company across restaurant brands, commercial insurance, and energy royalties, generating an 18% free-cash-flow margin.",
   "leader": {
    "line": "Born in Tehran. Built a permanent-capital holding company in San Antonio.",
-   "story": "Sardar Biglari was born in Tehran in 1977; his family left Iran in 1984 and settled in Texas. He founded Biglari Capital at age 22 and took control of Steak 'n Shake in 2008, transforming it into Biglari Holdings."
+   "story": "Sardar Biglari was born in Tehran in 1977; his family left Iran in 1984 and settled in Texas. He founded Biglari Capital at age 22 and took control of Steak 'n Shake in 2008, transforming it into Biglari Holdings.",
+   "photo": "leaders/bh.jpg"
   },
   "ir": "https://www.biglariholdings.com"
  },
@@ -224,8 +231,126 @@
   "thesis": "Led by Executive Chairman Ali Mazanderani, Lesaka Technologies operates a profitable merchant and consumer fintech platform trading at less than 7x forward earnings.",
   "leader": {
    "line": "Global fintech investor and operator leading Lesaka's merchant platform expansion.",
-   "story": "Ali Mazanderani is a global fintech entrepreneur and investor of Iranian heritage who has ledLesaka Technologies as Executive Chairman since 2024."
+   "story": "Ali Mazanderani is a global fintech entrepreneur and investor of Iranian heritage who has ledLesaka Technologies as Executive Chairman since 2024.",
+   "photo": "leaders/lsak.jpg"
   },
   "ir": "https://lesakatech.com/investors/"
+ },
+ "SOUN": {
+  "name": "SoundHound AI",
+  "ceo": "Keyvan Mohajer",
+  "role": "CEO",
+  "sector": "Voice AI",
+  "leader": {
+   "photo": "leaders/soun.jpg"
+  }
+ },
+ "OPEN": {
+  "name": "Opendoor",
+  "ceo": "Kaz Nejatian",
+  "role": "CEO",
+  "sector": "Proptech",
+  "leader": {
+   "photo": "leaders/open.jpg"
+  }
+ },
+ "AEVA": {
+  "name": "Aeva Technologies",
+  "ceo": "Soroush Salehian",
+  "role": "CEO",
+  "sector": "Lidar / Autonomy",
+  "leader": {
+   "photo": "leaders/aeva.jpg"
+  }
+ },
+ "SERV": {
+  "name": "Serve Robotics",
+  "ceo": "Ali Kashani",
+  "role": "CEO",
+  "sector": "Robotics / Delivery",
+  "leader": {
+   "photo": "leaders/serv.jpg"
+  }
+ },
+ "BLND": {
+  "name": "Blend Labs",
+  "ceo": "Nima Ghamsari",
+  "role": "Head of Blend & Chair",
+  "sector": "Mortgage Software",
+  "leader": {
+   "photo": "leaders/blnd.jpg"
+  }
+ },
+ "SG": {
+  "name": "Sweetgreen",
+  "ceo": "Jonathan Neman",
+  "role": "Chair & CEO",
+  "sector": "Restaurants",
+  "leader": {
+   "photo": "leaders/sg.jpg"
+  }
+ },
+ "SMMT": {
+  "name": "Summit Therapeutics",
+  "ceo": "Maky Zanganeh",
+  "role": "Co-CEO",
+  "sector": "Oncology Biotech",
+  "leader": {
+   "photo": "leaders/smmt.jpg"
+  }
+ },
+ "PGEN": {
+  "name": "Precigen",
+  "ceo": "Helen Sabzevari",
+  "role": "CEO",
+  "sector": "Gene & Cell Therapy",
+  "leader": {
+   "photo": "leaders/pgen.jpg"
+  }
+ },
+ "AEYE": {
+  "name": "AudioEye",
+  "ceo": "David Moradi",
+  "role": "Executive Chairman",
+  "sector": "Digital Accessibility Software",
+  "leader": {
+   "photo": "leaders/aeye.jpg"
+  }
+ },
+ "BHM": {
+  "name": "Bluerock Homes Trust",
+  "ceo": "Ramin Kamfar",
+  "role": "Chair & CEO",
+  "sector": "Residential Real Estate (REIT)",
+  "leader": {
+   "photo": "leaders/bhm.jpg"
+  }
+ },
+ "SEER": {
+  "name": "Seer",
+  "ceo": "Omid Farokhzad",
+  "role": "Chair & CEO",
+  "sector": "Proteomics Tools",
+  "leader": {
+   "photo": "leaders/seer.jpg"
+  }
+ },
+ "NTHI": {
+  "name": "NeOnc Technologies",
+  "ceo": "Amir Heshmatpour",
+  "role": "CEO & Executive Chairman",
+  "sector": "Brain Cancer Biotech",
+  "leader": {
+   "photo": "leaders/nthi.jpg"
+  }
+ },
+ "MASI": {
+  "name": "Masimo",
+  "ceo": "Joe Kiani",
+  "role": "Founder & CEO",
+  "sector": "Medtech / Patient Monitoring",
+  "leader": {
+   "photo": "leaders/joe-kiani.jpg"
+  }
  }
 }
