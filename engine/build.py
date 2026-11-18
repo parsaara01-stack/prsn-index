@@ -292,7 +292,8 @@ def assemble(D, comps, px, R, U):
         p["prsn_mult"], p["bench_mult"] = s[-1][1] / r0[1], s[-1][2] / r0[2]
     D["private"] = priv
     # directory, decisions, live account
-    D["directory"] = [{**r, "in_index": r["ticker"] in held_set} for r in read_csv(DATA / "directory" / "leaders.csv")]
+    dir_rows = sorted(read_csv(DATA / "directory" / "leaders.csv"), key=lambda r: (r.get("name", "").lower(), r.get("company", "").lower()))
+    D["directory"] = [{**r, "in_index": r["ticker"] in held_set} for r in dir_rows]
     D["decisions"] = list(reversed(read_json(DECISIONS_JSON, [])))[:26]
     acct = read_json(ACCOUNT_JSON)
     D["account"] = acct

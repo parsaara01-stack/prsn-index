@@ -736,19 +736,28 @@ function Directory({ D, pick }) {
   }, [D.holdings]);
 
   const [tab, setTab] = useState("all");
+  const [sortBy, setSortBy] = useState("name");
   const [q, setQ] = useState("");
 
-  const rows = all.filter(r => {
-    if (tab === "held" && !r.in_index) return false;
-    if (tab === "watch" && (r.type !== "public" || r.in_index)) return false;
-    if (tab === "private" && r.type !== "private") return false;
-    if (tab === "public" && r.type !== "public") return false;
-    if (q) {
-      const hay = (r.name + " " + r.company + " " + r.sector + " " + (r.ticker || "") + " " + (r.hq || "")).toLowerCase();
-      if (!hay.includes(q.toLowerCase())) return false;
-    }
-    return true;
-  });
+  const lastName = s => { const p = (s || "").trim().split(/\s+/); return (p[p.length - 1] || "").toLowerCase(); };
+  const rows = useMemo(() => {
+    const filtered = all.filter(r => {
+      if (tab === "held" && !r.in_index) return false;
+      if (tab === "watch" && (r.type !== "public" || r.in_index)) return false;
+      if (tab === "private" && r.type !== "private") return false;
+      if (tab === "public" && r.type !== "public") return false;
+      if (q) {
+        const hay = (r.name + " " + r.company + " " + r.sector + " " + (r.ticker || "") + " " + (r.hq || "")).toLowerCase();
+        if (!hay.includes(q.toLowerCase())) return false;
+      }
+      return true;
+    });
+    return [...filtered].sort((a, b) => {
+      if (sortBy === "last") return lastName(a.name).localeCompare(lastName(b.name)) || a.name.localeCompare(b.name);
+      if (sortBy === "company") return (a.company || "").localeCompare(b.company || "");
+      return (a.name || "").localeCompare(b.name || "") || (a.company || "").localeCompare(b.company || "");
+    });
+  }, [all, tab, sortBy, q]);
 
   const nHeld = all.filter(r => r.in_index).length;
   const nPub = all.filter(r => r.type === "public").length;
@@ -756,7 +765,7 @@ function Directory({ D, pick }) {
 
   return html`
     <${Card} className="col-span-12" id="directory">
-      <${Head} title="Persian Executive & Company Directory" aside=${`${all.length} verified leaders (${nPub} public, ${nPriv} private & unicorn founders)`} />
+      <${Head} title="Persian Executive & Company Directory" aside=${`${all.length} verified leaders (${nPub} public, ${nPriv} private & unicorn founders) · Sorted alphabetically (A–Z)`} />
       <div className="flex flex-wrap items-center gap-2 mb-4">
         <div className="flex flex-wrap gap-1.5" role="group" aria-label="Directory filter">
           <${Pill} active=${tab === "all"} onClick=${() => setTab("all")}>All Leaders (${all.length})<//>
@@ -765,8 +774,17 @@ function Directory({ D, pick }) {
           <${Pill} active=${tab === "watch"} onClick=${() => setTab("watch")}>Public Watchlist (${nPub - nHeld})<//>
           <${Pill} active=${tab === "private"} onClick=${() => setTab("private")}>Private & Unicorns (${nPriv})<//>
         </div>
-        <input type="search" value=${q} onInput=${e => setQ(e.target.value)} placeholder="Search executive, company, ticker, or sector…" aria-label="Search the directory"
-          className="ml-auto w-full sm:w-[280px] rounded-[2px] border border-line bg-white px-3 py-1.5 text-[13px] text-fg placeholder:text-dim focus:outline-none focus:border-accent" />
+        <div className="flex items-center gap-1.5 ml-auto w-full sm:w-auto">
+          <label className="text-[11.5px] text-dim whitespace-nowrap">Sort:</label>
+          <select value=${sortBy} onChange=${e => setSortBy(e.target.value)} aria-label="Sort directory"
+            className="rounded-[2px] border border-line bg-white px-2.5 py-1.5 text-[12.5px] font-medium text-fg focus:outline-none focus:border-accent">
+            <option value="name">Executive (A–Z)</option>
+            <option value="last">Surname (A–Z)</option>
+            <option value="company">Company (A–Z)</option>
+          </select>
+          <input type="search" value=${q} onInput=${e => setQ(e.target.value)} placeholder="Filter executive, company, or sector…" aria-label="Search the directory"
+            className="flex-1 sm:w-[250px] rounded-[2px] border border-line bg-white px-3 py-1.5 text-[13px] text-fg placeholder:text-dim focus:outline-none focus:border-accent" />
+        </div>
       </div>
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-px bg-line border border-line">
         ${rows.map(r => {
