@@ -89,7 +89,7 @@ def _next_friday(d):
 
 
 # ---------- daily: extend the index through the latest close, then rebuild the page data
-def daily(decide_today=False):
+def daily(decide_today=False, execute_now=False):
     R, U = rules(), universe()
     D = read_json(INDEX_JSON)
     comps = read_json(COMPANIES_JSON)
@@ -104,7 +104,7 @@ def daily(decide_today=False):
     if done:   # an executed rebalance: its targets become the holdings' targets
         D["targets"], D["targets_date"] = pmeta or D.get("targets"), done[-1]["date"]
     if decide_today:
-        decide(D, comps, px, R, U)
+        decide(D, comps, px, R, U, execute_now=execute_now)
     assemble(D, comps, px, R, U)
     write_json(INDEX_JSON, D)
     log.info("level %.2f on %s", D["level"], D["asof"])
@@ -122,7 +122,7 @@ def _migrate(D):
 
 
 # ---------- weekly (Friday): decide whether and how to rebalance
-def decide(D, comps, px, R, U):
+def decide(D, comps, px, R, U, execute_now=False):
     asof = D["series"][-1][0]
     d = date.fromisoformat(asof)
     recs = []
@@ -132,14 +132,15 @@ def decide(D, comps, px, R, U):
     held, watch = method.targets(recs, R)
     cur = D.get("_weights") or {h["ticker"]: h["weight"] for h in D["holdings"]}
     prev_t = {k: v["target"] for k, v in (D.get("targets") or {}).items()}
-    first_v2 = not any(str(r.get("rules", "1")) >= "2" for r in D["rebalances"]) and not (D.get("pending") or {}).get("rules", "").startswith("2")
-    monthly = d.weekday() == 4 and d.day <= 7
+    ver = str(R["version"])
+    first_ver = not any(str(r.get("rules", "1")) == ver for r in D["rebalances"]) and (D.get("pending") or {}).get("rules") != ver
+    monthly = d.day <= 7
     new = {h["ticker"]: h["target"] for h in held}
     drops = [t for t in cur if cur[t] > 0 and t not in new]
     drift = max([abs(cur.get(t, 0) - prev_t.get(t, 0)) for t in set(cur) | set(prev_t)] or [0])
-    trigger = ("v2 launch" if first_v2 else "monthly reconstitution" if monthly else "event exit" if drops
+    trigger = (f"v{ver.split('.')[0]} launch" if first_ver else "monthly reconstitution" if monthly else "event exit" if drops
                else "drift" if drift > R["rebalance"]["drift_band"] else None)
-    if trigger in ("event exit", "drift"):   # between monthly resets, nobody new comes in
+    if trigger in ("event exit", "drift") and len(cur) >= 10:   # only freeze additions mid-month if portfolio already has 10+ holdings
         keep = [h for h in held if h["ticker"] in cur]
         s = sum(h["target"] for h in keep) or 1
         for h in keep:
@@ -149,18 +150,30 @@ def decide(D, comps, px, R, U):
         new = {h["ticker"]: h["target"] for h in held}
     mac = regime(px)
     names = {u["ticker"]: u for u in _all_universe()}
+    adds = sorted(t for t in new if cur.get(t, 0) == 0) if trigger else []
     rec = {"date": asof, "rules": R["version"], "trigger": trigger or "no change", "vix": mac.get("vix"), "regime": mac.get("regime"),
-           "drift": round(drift, 4), "adds": sorted(t for t in new if cur.get(t, 0) == 0), "drops": sorted(drops),
+           "drift": round(drift, 4), "adds": adds, "drops": sorted(drops) if trigger else [],
            "targets": [{"ticker": h["ticker"], "tier": h["tier"], "target": round(h["target"], 4), "from": round(cur.get(h["ticker"], 0), 4),
                         "conviction": round(h["scores"]["conviction"], 1)} for h in held] if trigger else [],
-           "exits": [{"ticker": w["ticker"], "rule": w["rule"], "detail": w["detail"]} for w in watch if w["ticker"] in drops]}
-    rec["summary"] = _summary(rec, names)
+           "exits": [{"ticker": w["ticker"], "rule": w["rule"], "detail": w["detail"]} for w in watch if w["ticker"] in drops] if trigger else []}
+    rec["summary"] = _summary(rec, names, execute_now=execute_now)
     if trigger:
-        window_end = (d + timedelta(days=7)).isoformat()
         meta = {h["ticker"]: {"target": h["target"], "tier": h["tier"], "sleeve": h["sleeve"], "wildcard": h["wildcard"], "scores": h["scores"],
                               "composite": h["scores"]["conviction"], "why": h["why"], "rules": R["version"]} for h in held}
-        D["pending"] = {"decided": asof, "window_end": window_end, "type": trigger, "rules": R["version"], "targets": new, "signal": None,
-                        "meta": meta, "exits": rec["exits"], "summary": rec["summary"]}
+        if execute_now:
+            turnover = sum(abs(new.get(k, 0) - cur.get(k, 0)) for k in set(new) | set(cur)) / 2
+            D["series"][-1][1] = round(D["series"][-1][1] * (1 - turnover * R["cost_bps"] / 1e4), 2)
+            D["_weights"] = dict(new)
+            D["targets"] = meta
+            D["targets_date"] = asof
+            D["pending"] = None
+            D["rebalances"] = [r for r in D["rebalances"] if not (r.get("date") == asof and r.get("type") == trigger)] + [
+                {"date": asof, "type": trigger, "turnover": round(turnover, 4), "rules": R["version"], "decided": asof, "signal": asof}
+            ]
+        else:
+            window_end = (d + timedelta(days=7)).isoformat()
+            D["pending"] = {"decided": asof, "window_end": window_end, "type": trigger, "rules": R["version"], "targets": new, "signal": None,
+                            "meta": meta, "exits": rec["exits"], "summary": rec["summary"]}
     D["watch_all"] = watch
     D["selection_asof"] = asof
     D["macro"] = mac
@@ -171,17 +184,21 @@ def decide(D, comps, px, R, U):
     return rec
 
 
-def _summary(rec, names):
+def _summary(rec, names, execute_now=False):
     n = lambda t: names.get(t, {}).get("name", t)
     if rec["trigger"] == "no change":
         return f"No trades. Weights are within {rec['drift'] * 100:.1f} pts of target and nothing failed a rule."
-    parts = [{"v2 launch": "Switch to the v2 rules", "monthly reconstitution": "Monthly reset", "event exit": "A holding broke a rule",
-              "drift": "Weights drifted past 5 pts"}[rec["trigger"]] + "."]
+    trig_map = {"v2 launch": "Switch to Rules v2", "v3 launch": "Upgrade to Rules v3 (Ackman-style compounder & catalyst architecture)",
+                "monthly reconstitution": "Monthly reconstitution", "event exit": "A holding broke a rule", "drift": "Weights drifted past 5 pts"}
+    parts = [trig_map.get(rec["trigger"], rec["trigger"]) + "."]
     if rec["adds"]:
         parts.append("In: " + ", ".join(n(t) for t in rec["adds"]) + ".")
     if rec["drops"]:
         parts.append("Out: " + ", ".join(n(t) for t in rec["drops"]) + ".")
-    parts.append("Trades on the first calm day (VIX under 30, no spike) in the next week, one close after the signal.")
+    if execute_now:
+        parts.append("Reconstituted at the market close with VIX calm (< 30).")
+    else:
+        parts.append("Trades on the first calm day (VIX under 30, no spike) in the next week, one close after the signal.")
     return " ".join(parts)
 
 

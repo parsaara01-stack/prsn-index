@@ -1,4 +1,4 @@
-"""The PRSN method, v2: who is eligible, how each company scores, and how much each one gets."""
+"""The PRSN method, v3: Ackman-style high-conviction compounder & asymmetric catalyst architecture."""
 import pandas as pd
 
 from .common import CONFIG, read_yaml
@@ -10,6 +10,12 @@ def events():
         return {e["ticker"]: e for e in (read_yaml(CONFIG / "events.yaml") or {}).get("exclude", [])}
     except FileNotFoundError:
         return {}
+
+
+def _is_profitable(rec):
+    """True when the business generates positive operating margin."""
+    m = rec.get("metrics") or {}
+    return (m.get("op_margin") or -1) > 0
 
 
 def screen(rec, R):
@@ -32,8 +38,11 @@ def screen(rec, R):
         return False, "Thin trading", f"${0 if adv is None else adv:.1f}M a day, needs ${need:g}M.", None
     if rec["price"] < g["min_price"]:
         return False, "Under $1", f"Price ${rec['price']:.2f}.", None
-    if rec.get("rel_3m") is not None and rec["rel_3m"] < g["stop_rel_3m"]:
-        return False, "Relative stop", f"Trails the S&P 500 by {abs(rec['rel_3m']) * 100:.0f} pts over 3 months.", None
+    # V3 Fundamental Quality Shield: profitable compounders are NEVER stopped out on 3-month price noise.
+    # Unprofitable speculative names trailing the S&P 500 by 35+ pts over 3M hit the trend brake.
+    if not _is_profitable(rec):
+        if rec.get("rel_3m") is not None and rec["rel_3m"] < g["stop_rel_3m"]:
+            return False, "Trend brake", f"Unprofitable issuer trailing S&P 500 by {abs(rec['rel_3m']) * 100:.0f} pts over 3M.", None
     return True, None, None, "small" if small else "core"
 
 
@@ -58,7 +67,6 @@ def _inputs(rec):
     }
 
 
-# Missing data: quality must be shown, so a gap scores low; catalysts and rerating default to neutral.
 MISSING = {"quality": 0.25, "catalyst": 0.5, "rerate": 0.4}
 
 
@@ -99,6 +107,9 @@ def _fill(weights, caps, total):
         for k in over:
             fixed[k] = caps[k]
         w = {**w, **{k: caps[k] for k in over}}
+    for k, v in w.items():
+        if k not in fixed:
+            fixed[k] = min(v, caps[k])
     return fixed
 
 
@@ -116,35 +127,51 @@ def targets(recs, R):
         return [], watch
     S = score(elig, R)
     gate = R["scores"]["quality_gate_pct"]
+    scale_mcap = R["scores"].get("scale_catalyst_mcap_b", 3.0)
+    scale_rev = R["scores"].get("scale_catalyst_rev_g", 0.30)
 
-    def profitable(r):   # quality also has to be real: an operating profit
-        return not R["scores"].get("require_profit") or ((r.get("metrics") or {}).get("op_margin") or -1) > 0
+    def qualifies(r):
+        m = r.get("metrics") or {}
+        s = S[r["ticker"]]
+        # Track A: Profitable compounder (positive operating margin) in top half on Quality
+        if _is_profitable(r) and s["quality_pct"] >= gate:
+            return True
+        # Track B: Scaled enterprise compounder/innovator ($3B+ mcap with positive FCF margin > 5% or 30%+ revenue growth and catalyst >= 40)
+        if (m.get("mcap_b") or 0) >= scale_mcap and (((m.get("fcf_margin") or 0) >= 0.05 and (m.get("rev_growth") or 0) >= 0.15) or ((m.get("rev_growth") or 0) >= scale_rev and s["catalyst"] >= 40)):
+            return True
+        return False
 
-    qual = [r for r in elig if S[r["ticker"]]["quality_pct"] >= gate and profitable(r)]
+    T = R["tiers"]
+    max_names = T["core"]["count"] + T["build"]["count"] + T["toehold"].get("count", 4)
+    # Exclude micro-cap clinical biotech one-time milestone distortions with -50%+ FCF burn from Track A
+    qual_all = [r for r in elig if qualifies(r) and ((r.get("metrics") or {}).get("fcf_margin") or 0) > -0.35]
+    qual_all.sort(key=lambda r: (-int(_is_profitable(r)), -S[r["ticker"]]["conviction"]))
+    qual = qual_all[:max_names]
     fail = [r for r in elig if r not in qual]
-    # wildcard: best catalyst among fast growers that miss the quality cut
+
+    # wildcard: best catalyst among fast growers that miss the main qualification
     wc = R.get("wildcard") or {}
     cands = [r for r in fail if ((r.get("metrics") or {}).get("rev_growth") or 0) >= wc.get("min_rev_growth", 9)]
     wild = max(cands, key=lambda r: S[r["ticker"]]["catalyst"], default=None) if wc.get("weight") else None
     for r in fail:
         if r is not wild:
             s = S[r["ticker"]]
-            why = "below the top half" if s["quality_pct"] < gate else "no operating profit yet"
-            watch.append({"ticker": r["ticker"], "rule": "Quality cut", "detail": f"Quality {s['quality']:.0f}, {why}. Catalyst {s['catalyst']:.0f}, rerate {s['rerate']:.0f}.", "scores": s})
-    # tiers, in conviction order
-    T = R["tiers"]
-    qual.sort(key=lambda r: -S[r["ticker"]]["conviction"])
+            why = "unprofitable below scaled-catalyst bar" if not _is_profitable(r) else f"Quality rank {s['quality_pct']:.0f} below top-half cutoff"
+            watch.append({"ticker": r["ticker"], "rule": "Quality cut", "detail": f"Quality {s['quality']:.0f} ({why}). Catalyst {s['catalyst']:.0f}, rerate {s['rerate']:.0f}.", "scores": s})
+
     n_core = n_build = 0
-    for r in qual:
+    for r in sorted(qual, key=lambda r: -S[r["ticker"]]["conviction"]):
         s = S[r["ticker"]]
+        m = r.get("metrics") or {}
         if r["sleeve"] == "small":
             r["tier"] = "toehold"
-        elif n_core < T["core"]["count"] and s["catalyst"] >= T["core"]["min_catalyst"]:
+        elif _is_profitable(r) and (m.get("mcap_b") or 0) >= 5.0 and n_core < T["core"]["count"] and s["catalyst"] >= T["core"]["min_catalyst"]:
             r["tier"], n_core = "core", n_core + 1
-        elif n_build < T["build"]["count"]:
+        elif _is_profitable(r) and n_build < T["build"]["count"]:
             r["tier"], n_build = "build", n_build + 1
         else:
             r["tier"] = "toehold"
+    qual.sort(key=lambda r: ({"core": 0, "build": 1, "toehold": 2}[r["tier"]], -S[r["ticker"]]["conviction"]))
     raw, caps = {}, {}
     for tier in ["core", "build", "toehold"]:
         grp = [r for r in qual if r["tier"] == tier]
@@ -159,7 +186,7 @@ def targets(recs, R):
     w = _fill(raw, caps, total)
     small = [r["ticker"] for r in qual if r["sleeve"] == "small"]
     st = sum(w[t] for t in small)
-    if st > R["small_cap"]["max_total"]:   # shrink the sleeve, hand the rest to the larger names
+    if st > R["small_cap"]["max_total"]:
         f = R["small_cap"]["max_total"] / st
         for t in small:
             w[t] *= f

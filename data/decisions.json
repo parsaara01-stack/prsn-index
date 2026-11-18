@@ -206,5 +206,127 @@
   "targets": [],
   "exits": [],
   "summary": "No trades. Weights are within 0.3 pts of target and nothing failed a rule."
+ },
+ {
+  "date": "2026-11-18",
+  "rules": "3.0",
+  "trigger": "v3 launch",
+  "vix": 25.559999465942383,
+  "regime": "Risk-off",
+  "drift": 0.0117,
+  "adds": [
+   "APP",
+   "BH",
+   "GH",
+   "MCRI",
+   "MMI",
+   "NVO",
+   "RSVR",
+   "TARS",
+   "TTAN"
+  ],
+  "drops": [],
+  "targets": [
+   {
+    "ticker": "INTU",
+    "tier": "core",
+    "target": 0.1345,
+    "from": 0.2726,
+    "conviction": 76.6
+   },
+   {
+    "ticker": "APP",
+    "tier": "core",
+    "target": 0.1328,
+    "from": 0,
+    "conviction": 74.1
+   },
+   {
+    "ticker": "NVO",
+    "tier": "core",
+    "target": 0.1283,
+    "from": 0,
+    "conviction": 67.0
+   },
+   {
+    "ticker": "UBER",
+    "tier": "core",
+    "target": 0.1254,
+    "from": 0.2791,
+    "conviction": 62.5
+   },
+   {
+    "ticker": "TDY",
+    "tier": "core",
+    "target": 0.1219,
+    "from": 0.264,
+    "conviction": 57.1
+   },
+   {
+    "ticker": "MCRI",
+    "tier": "build",
+    "target": 0.0549,
+    "from": 0,
+    "conviction": 65.7
+   },
+   {
+    "ticker": "PLD",
+    "tier": "build",
+    "target": 0.0525,
+    "from": 0.0915,
+    "conviction": 56.6
+   },
+   {
+    "ticker": "RSVR",
+    "tier": "build",
+    "target": 0.0517,
+    "from": 0,
+    "conviction": 53.4
+   },
+   {
+    "ticker": "BH",
+    "tier": "build",
+    "target": 0.0515,
+    "from": 0,
+    "conviction": 52.7
+   },
+   {
+    "ticker": "MMI",
+    "tier": "build",
+    "target": 0.0514,
+    "from": 0,
+    "conviction": 52.2
+   },
+   {
+    "ticker": "LTH",
+    "tier": "toehold",
+    "target": 0.0248,
+    "from": 0.0927,
+    "conviction": 49.6
+   },
+   {
+    "ticker": "TTAN",
+    "tier": "toehold",
+    "target": 0.0239,
+    "from": 0,
+    "conviction": 42.5
+   },
+   {
+    "ticker": "GH",
+    "tier": "toehold",
+    "target": 0.0235,
+    "from": 0,
+    "conviction": 38.5
+   },
+   {
+    "ticker": "TARS",
+    "tier": "toehold",
+    "target": 0.0231,
+    "from": 0,
+    "conviction": 35.1
+   }
+  ],
+  "exits": [],
+  "summary": "Upgrade to Rules v3 (Ackman-style compounder & catalyst architecture). In: AppLovin, Biglari Holdings, Guardant Health, Monarch Casino & Resort, Marcus & Millichap, Novo Nordisk, Reservoir Media, Tarsus Pharmaceuticals, ServiceTitan. Reconstituted at the market close with VIX calm (< 30)."
  }
 ]

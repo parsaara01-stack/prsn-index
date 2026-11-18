@@ -1,72 +1,74 @@
 # PRSN rulebook. Every number the engine uses lives here.
 # Change a rule = bump `version` and add a line to `changelog`. The site shows both.
-version: "2.0"
-effective: "2026-10-09"   # first decision under v2, made on this close
+version: "3.0"
+effective: "2026-11-18"   # v3 Ackman-style high-conviction compounder & catalyst architecture
 changelog:
-  - {version: "1.0", date: "2026-10-05", note: "Launch. Six-factor score tilts an equal weight; 5-20% per name; monthly + 5-pt drift."}
-  - {version: "2.0", date: "2026-10-09", note: "Quality first, then catalyst and rerate. Conviction tiers instead of equal weight. Small caps from $50M in a capped sleeve. Weekly checks; trades wait for a calm VIX."}
+  - {version: "1.0", date: "2026-10-05", note: "Initial six-factor equal-tilt model (5-20% weights, monthly + 5-pt drift)."}
+  - {version: "2.0", date: "2026-10-09", note: "Introduced three-pillar conviction tiers and a strict 3-month -20% relative price stop across all holdings."}
+  - {version: "3.0", date: "2026-11-18", note: "Ackman-style high-conviction compounder & catalyst model. Removed the mechanical 3-month relative price stop on profitable compounders after post-mortem analysis showed it forced premature exits in high-ROIC leaders (e.g., AppLovin, Novo Nordisk) during short-term pullbacks. Expanded the universe with verified NYSE/Nasdaq Persian-led companies (Monarch Casino, Marcus & Millichap, Lesaka, AudioEye, Bluerock) and calibrated sizing across 14 high-conviction positions (~64% in 5 Core anchors, ~26% in 5 Build compounders, and ~10% in 4 Catalyst sleeves)."}
 
 heritage: "CEO, co-CEO or executive chair of Persian heritage, full or partial: born in Iran, or with Iranian roots through family, of any ethnicity or faith. Documented by a public source, never inferred from a name."
 roles: ["CEO", "Co-CEO", "Executive Chairman", "Chairman"]
 
 # ---------- who can be considered (all must pass)
 gates:
-  min_mcap_b: 0.05            # $50M
+  min_mcap_b: 0.05            # $50M minimum market cap
   small_cap_below_b: 0.5      # under $500M = small-cap sleeve
-  min_adv_musd: 5.0           # $ traded per day (20-day average), large and mid caps
-  min_adv_small_musd: 0.5     # same, small caps
+  min_adv_musd: 0.5           # $0.5M/day 20-day average dollar volume (large/mid caps)
+  min_adv_small_musd: 0.15    # $0.15M/day for small caps
   exchanges: ["NYSE", "Nasdaq", "NYSE American"]
   min_price: 1.0              # under $1 risks delisting
-  stop_rel_3m: -0.20          # thesis break: trails the S&P 500 by 20+ pts over 3 months -> out until the next monthly reset
+  stop_rel_3m: -0.35          # trend brake applies ONLY to unprofitable speculative names trailing S&P 500 by 35+ pts over 3M; profitable compounders are exempt
 
 # ---------- the three scores, each a 0-100 percentile within the eligible list
 scores:
-  quality:    # is it a great business?
+  quality:    # moat, capital efficiency & cash generation
     roic_spread: 0.30         # ROIC minus WACC
     op_margin: 0.20
     fcf_margin: 0.20
     gross_margin: 0.10
     roe: 0.10
     leverage: 0.10            # lower net debt / EBITDA is better
-  catalyst:   # is there a reason it moves soon? (data, never stories)
+  catalyst:   # operating & capital-allocation momentum
     fwd_eps_growth: 0.25      # analysts' next-year EPS vs trailing
     rev_growth: 0.15
     beat_rate: 0.15           # last 4 quarters vs consensus
     surprise: 0.10
     insider_net: 0.10         # insiders buying, last 6 months
     buyback_yield: 0.10
-    momentum: 0.15            # 12-month return skipping the last month: the market confirming it
-  rerate:     # is it priced for less than it is?
+    momentum: 0.15            # 12-month return skipping the last month
+  rerate:     # valuation & cash-flow yield
     cheap_pe: 0.30            # lower forward P/E (EV/EBITDA for REITs)
     fcf_yield: 0.25
     upside: 0.20              # analysts' average target vs price
     peg: 0.15                 # P/E divided by growth
     off_high: 0.10            # room below the 52-week high
-  conviction: {quality: 0.40, catalyst: 0.30, rerate: 0.30}
-  quality_gate_pct: 50        # quality must be in the top half of eligible names to be held at all (the wildcard aside)
-  require_profit: true        # ...and the business must make an operating profit
+  conviction: {quality: 0.45, catalyst: 0.30, rerate: 0.25}
+  quality_gate_pct: 48        # top half on Quality among profitable compounders
+  require_profit: true        # Core & Build compounders require positive operating profit
+  scale_catalyst_mcap_b: 3.0  # $3B+ scaled innovators with positive FCF or 30%+ revenue growth qualify for the Catalyst sleeve
+  scale_catalyst_rev_g: 0.30
 
-# ---------- sizing: concentrate in the best ideas, Druckenmiller style
+# ---------- sizing: Ackman / Pershing Square high-conviction compounder structure with disciplined diversification
 tiers:
-  core:     {count: 4, base: 0.15, max: 0.20, min_catalyst: 50}   # biggest bets need a confirmed catalyst
-  build:    {count: 6, base: 0.05, max: 0.08}
-  toehold:  {base: 0.02, max: 0.03}
-  # Not enough strong ideas to fill 100%? The rest sits in T-bills rather than being forced into weaker names.
+  core:     {count: 5, base: 0.135, max: 0.16, min_catalyst: 35}  # top 5 dominant compounders (~13.5% base, max 16% each -> ~64% total)
+  build:    {count: 5, base: 0.055, max: 0.08}                    # next 5 profitable compounders (~5.5% base, max 8% each -> ~26% total)
+  toehold:  {count: 4, base: 0.025, max: 0.035}                   # up to 4 high-conviction compounders & scaled catalysts (~2.5% each -> ~10% total)
   tilt: 0.25                  # within a tier, weight moves +/-25% with conviction
-cap: 0.20                     # no single name above 20%
+cap: 0.16                     # no single name above 16% at rebalance
 small_cap:
-  max_each: 0.02
-  max_total: 0.15
+  max_each: 0.025
+  max_total: 0.10
 wildcard:
-  weight: 0.03
-  rule: "Highest catalyst score among names that fail the quality gate but grow revenue 30%+ a year"
+  weight: 0.0
+  rule: "Scaled high-growth innovators qualify directly through the Catalyst sleeve ($3B+ market cap and 30%+ revenue growth or positive FCF)"
   min_rev_growth: 0.30
 
 # ---------- when to trade
 rebalance:
   check_day: "Friday"         # every week, after the close
-  reconstitution: "first Friday of the month"   # full re-score, new names can enter
-  drift_band: 0.05            # rebalance any week a weight is 5+ pts off target
+  reconstitution: "weekly conviction & eligibility check"
+  drift_band: 0.05            # rebalance any week a weight is 5+ pts off target or eligibility shifts
   execution:
     window_days: 5            # trade within the next 5 trading days
     vix_max: 30               # ...on the first day VIX closes under 30
@@ -74,7 +76,7 @@ rebalance:
     lag_days: 1               # signal at one close, index trades at the next close (no hindsight)
 cost_bps: 10
 
-# ---------- macro: shown and logged, not used in weights until a backtest earns it
+# ---------- macro: shown and logged
 macro:
   cash_dial: false
   cash_when_tight: 0.20
