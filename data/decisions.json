@@ -328,5 +328,18 @@
   ],
   "exits": [],
   "summary": "Upgrade to Rules v3 (Ackman-style compounder & catalyst architecture). In: AppLovin, Biglari Holdings, Guardant Health, Monarch Casino & Resort, Marcus & Millichap, Novo Nordisk, Reservoir Media, Tarsus Pharmaceuticals, ServiceTitan. Reconstituted at the market close with VIX calm (< 30)."
+ },
+ {
+  "date": "2026-11-20",
+  "rules": "3.0",
+  "trigger": "no change",
+  "vix": 35.88999938964844,
+  "regime": "Risk-off",
+  "drift": 0.012,
+  "adds": [],
+  "drops": [],
+  "targets": [],
+  "exits": [],
+  "summary": "No trades. Weights are within 1.2 pts of target and nothing failed a rule."
  }
 ]
