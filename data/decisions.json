@@ -341,5 +341,118 @@
   "targets": [],
   "exits": [],
   "summary": "No trades. Weights are within 1.2 pts of target and nothing failed a rule."
+ },
+ {
+  "date": "2026-11-27",
+  "rules": "3.0",
+  "trigger": "event exit",
+  "vix": 23.809999465942383,
+  "regime": "Risk-off",
+  "drift": 0.0183,
+  "adds": [],
+  "drops": [
+   "TARS"
+  ],
+  "targets": [
+   {
+    "ticker": "INTU",
+    "tier": "core",
+    "target": 0.1386,
+    "from": 0.1162,
+    "conviction": 77.8
+   },
+   {
+    "ticker": "APP",
+    "tier": "core",
+    "target": 0.1361,
+    "from": 0.1393,
+    "conviction": 73.9
+   },
+   {
+    "ticker": "NVO",
+    "tier": "core",
+    "target": 0.1307,
+    "from": 0.133,
+    "conviction": 65.8
+   },
+   {
+    "ticker": "UBER",
+    "tier": "core",
+    "target": 0.1291,
+    "from": 0.1268,
+    "conviction": 63.4
+   },
+   {
+    "ticker": "TDY",
+    "tier": "core",
+    "target": 0.1252,
+    "from": 0.1248,
+    "conviction": 57.4
+   },
+   {
+    "ticker": "MCRI",
+    "tier": "build",
+    "target": 0.0563,
+    "from": 0.0531,
+    "conviction": 65.9
+   },
+   {
+    "ticker": "PLD",
+    "tier": "build",
+    "target": 0.054,
+    "from": 0.053,
+    "conviction": 57.2
+   },
+   {
+    "ticker": "RSVR",
+    "tier": "build",
+    "target": 0.0529,
+    "from": 0.0512,
+    "conviction": 53.3
+   },
+   {
+    "ticker": "BH",
+    "tier": "build",
+    "target": 0.0529,
+    "from": 0.0511,
+    "conviction": 53.2
+   },
+   {
+    "ticker": "MMI",
+    "tier": "build",
+    "target": 0.0527,
+    "from": 0.0531,
+    "conviction": 52.5
+   },
+   {
+    "ticker": "LTH",
+    "tier": "toehold",
+    "target": 0.0244,
+    "from": 0.0256,
+    "conviction": 48.5
+   },
+   {
+    "ticker": "TTAN",
+    "tier": "toehold",
+    "target": 0.0238,
+    "from": 0.0243,
+    "conviction": 43.8
+   },
+   {
+    "ticker": "GH",
+    "tier": "toehold",
+    "target": 0.0232,
+    "from": 0.025,
+    "conviction": 38.8
+   }
+  ],
+  "exits": [
+   {
+    "ticker": "TARS",
+    "rule": "Quality cut",
+    "detail": "Quality 34 (unprofitable below scaled-catalyst bar). Catalyst 40, rerate 31."
+   }
+  ],
+  "summary": "A holding broke a rule. Out: Tarsus Pharmaceuticals. Trades on the first calm day (VIX under 30, no spike) in the next week, one close after the signal."
  }
 ]
